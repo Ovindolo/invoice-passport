@@ -1,0 +1,86 @@
+{
+  "spec": "invoice-passport/0.1",
+  "passport_id": "example-0001",
+  "verify_url": "https://issuer.example/invoice-passport?id=example-0001",
+  "invoice": {
+    "number": "INV-2026-0001",
+    "issue_date": "2026-10-01",
+    "due_date": "2026-10-15",
+    "currency": "EUR",
+    "status": "paid",
+    "subtotal": 840,
+    "tax_rate": 21,
+    "tax_amount": 176.4,
+    "total": 1016.4,
+    "notes": null,
+    "lines": [
+      {
+        "description": "Software development",
+        "quantity": 10,
+        "unit_price": 80,
+        "amount": 800
+      },
+      {
+        "description": "Hosting (October)",
+        "quantity": 1,
+        "unit_price": 40,
+        "amount": 40
+      }
+    ]
+  },
+  "seller": {
+    "name": "Beta Consulting SRL",
+    "tax_id": "RO14399840",
+    "address": "Str. Memorandumului 10, Cluj-Napoca",
+    "country": "RO",
+    "iban": "RO49AAAA1B31007593840000"
+  },
+  "buyer": {
+    "name": "Gamma SRL",
+    "contact": "Ana Pop",
+    "tax_id": "RO16341004",
+    "address": "Str. Lunga 3, Brasov",
+    "country": "RO"
+  },
+  "payment": {
+    "status": "paid",
+    "paid_at": "2026-10-03T09:12:44Z",
+    "method": "crypto",
+    "amount_received": null,
+    "evidence": [
+      {
+        "rail": "onchain",
+        "chain": "ethereum",
+        "asset": "USDC",
+        "amount": 1016.4,
+        "tx_hash": "0x8f2a5c1e9b7d3f6a0c4e2b8d1f7a9c3e5b0d2f4a6c8e1b3d5f7a9c0e2b4d6f8a",
+        "to_address": "0x0000000000000000000000000000000000000001",
+        "recorded_at": "2026-10-03T09:12:44Z"
+      }
+    ]
+  },
+  "history": [
+    {
+      "event": "invoice.created",
+      "at": "2026-10-01T08:00:00Z",
+      "source": "app"
+    },
+    {
+      "event": "invoice.sent",
+      "at": "2026-10-01T08:05:00Z",
+      "source": "email"
+    },
+    {
+      "event": "invoice.paid",
+      "at": "2026-10-03T09:12:44Z",
+      "source": "webhook"
+    }
+  ],
+  "fiscal": {
+    "e_invoice": {
+      "format": "UBL-2.1/CIUS-RO-1.0.1",
+      "sha256": "322ba19525daf1271af804c71fa969495e655bbd9ab07a160d8a554a32e27681",
+      "submission_id": null
+    }
+  }
+}

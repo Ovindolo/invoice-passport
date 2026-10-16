@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+  <cbc:CustomizationID>urn:cen.eu:en16931:2017#compliant#urn:efactura.mfinante.ro:CIUS-RO:1.0.1</cbc:CustomizationID>
+  <cbc:ID>BLF-1</cbc:ID>
+  <cbc:IssueDate>2026-10-15</cbc:IssueDate>
+  <cbc:DueDate>2026-10-22</cbc:DueDate>
+  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>
+  <cbc:Note>Servicii dezvoltare</cbc:Note>
+  <cbc:DocumentCurrencyCode>RON</cbc:DocumentCurrencyCode>
+  <cac:AccountingSupplierParty>
+    <cac:Party>
+      <cac:PostalAddress>
+        <cbc:StreetName>Str. Memorandumului 10</cbc:StreetName>
+        <cbc:CityName>Cluj-Napoca</cbc:CityName>
+        <cbc:PostalZone>400114</cbc:PostalZone>
+        <cbc:CountrySubentity>RO-CJ</cbc:CountrySubentity>
+        <cac:Country>
+          <cbc:IdentificationCode>RO</cbc:IdentificationCode>
+        </cac:Country>
+      </cac:PostalAddress>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>Popescu Ion PFA</cbc:RegistrationName>
+        <cbc:CompanyID>14399840</cbc:CompanyID>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:AccountingSupplierParty>
+  <cac:AccountingCustomerParty>
+    <cac:Party>
+      <cac:PostalAddress>
+        <cbc:StreetName>Bd. Unirii 5, Sector 3</cbc:StreetName>
+        <cbc:CityName>SECTOR3</cbc:CityName>
+        <cbc:PostalZone>030167</cbc:PostalZone>
+        <cbc:CountrySubentity>RO-B</cbc:CountrySubentity>
+        <cac:Country>
+          <cbc:IdentificationCode>RO</cbc:IdentificationCode>
+        </cac:Country>
+      </cac:PostalAddress>
+      <cac:PartyLegalEntity>
+        <cbc:RegistrationName>Alfa Soft SRL</cbc:RegistrationName>
+        <cbc:CompanyID>14399840</cbc:CompanyID>
+      </cac:PartyLegalEntity>
+    </cac:Party>
+  </cac:AccountingCustomerParty>
+  <cac:PaymentMeans>
+    <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>
+    <cac:PayeeFinancialAccount>
+      <cbc:ID>RO49AAAA1B31007593840000</cbc:ID>
+    </cac:PayeeFinancialAccount>
+  </cac:PaymentMeans>
+  <cac:TaxTotal>
+    <cbc:TaxAmount currencyID="RON">0.00</cbc:TaxAmount>
+    <cac:TaxSubtotal>
+      <cbc:TaxableAmount currencyID="RON">3000.00</cbc:TaxableAmount>
+      <cbc:TaxAmount currencyID="RON">0.00</cbc:TaxAmount>
+      <cac:TaxCategory>
+        <cbc:ID>O</cbc:ID>
+        <cbc:TaxExemptionReasonCode>VATEX-EU-O</cbc:TaxExemptionReasonCode>
+        <cac:TaxScheme>
+          <cbc:ID>VAT</cbc:ID>
+        </cac:TaxScheme>
+      </cac:TaxCategory>
+    </cac:TaxSubtotal>
+  </cac:TaxTotal>
+  <cac:LegalMonetaryTotal>
+    <cbc:LineExtensionAmount currencyID="RON">3000.00</cbc:LineExtensionAmount>
+    <cbc:TaxExclusiveAmount currencyID="RON">3000.00</cbc:TaxExclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="RON">3000.00</cbc:TaxInclusiveAmount>
+    <cbc:PayableAmount currencyID="RON">3000.00</cbc:PayableAmount>
+  </cac:LegalMonetaryTotal>
+  <cac:InvoiceLine>
+    <cbc:ID>1</cbc:ID>
+    <cbc:InvoicedQuantity unitCode="H87">2</cbc:InvoicedQuantity>
+    <cbc:LineExtensionAmount currencyID="RON">3000.00</cbc:LineExtensionAmount>
+    <cac:Item>
+      <cbc:Name>Dezvoltare software</cbc:Name>
+      <cac:ClassifiedTaxCategory>
+        <cbc:ID>O</cbc:ID>
+        <cac:TaxScheme>
+          <cbc:ID>VAT</cbc:ID>
+        </cac:TaxScheme>
+      </cac:ClassifiedTaxCategory>
+    </cac:Item>
+    <cac:Price>
+      <cbc:PriceAmount currencyID="RON">1500.00</cbc:PriceAmount>
+    </cac:Price>
+  </cac:InvoiceLine>
+</Invoice>

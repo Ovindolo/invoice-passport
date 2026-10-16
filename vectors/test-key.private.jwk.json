@@ -1,0 +1,13 @@
+{
+  "kty": "EC",
+  "alg": "ES256",
+  "crv": "P-256",
+  "d": "6TLm5G8BNFGCBRw-9aw6QI7Mz6TuEhEqQvaiR87jqH8",
+  "x": "sGCNDLjyLHUzpyKYC6wSMf8m7xYFr3KOKinrRbilYGo",
+  "y": "yq5GTmgI_8GFAayYhf-ZzMSaEq6Ft6v2FCpLhXqbCzo",
+  "key_ops": [
+    "sign"
+  ],
+  "ext": true,
+  "kid": "test-2026-10"
+}

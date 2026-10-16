@@ -1,0 +1,9 @@
+/**
+ * Open Invoice Passport: link a European e-invoice to verifiable proof of payment.
+ * @module
+ */
+export * from "./src/canonical.ts";
+export * from "./src/jws.ts";
+export * from "./src/passport.ts";
+export * from "./src/ubl.ts";
+export * from "./src/bnr.ts";

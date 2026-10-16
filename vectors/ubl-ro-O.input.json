@@ -1,0 +1,27 @@
+{
+  "number": "BLF-1",
+  "issueDate": "2026-10-15",
+  "dueDate": "2026-10-22",
+  "currency": "RON",
+  "taxRate": 0,
+  "note": "Servicii dezvoltare",
+  "seller": {
+    "name": "Popescu Ion PFA",
+    "taxId": "14399840",
+    "street": "Str. Memorandumului 10",
+    "city": "Cluj-Napoca",
+    "postalCode": "400114",
+    "country": "RO"
+  },
+  "buyer": {
+    "name": "Alfa Soft SRL",
+    "taxId": "RO14399840",
+    "street": "Bd. Unirii 5, Sector 3",
+    "city": "Bucuresti",
+    "postalCode": "030167",
+    "country": "RO"
+  },
+  "lines": [{ "description": "Dezvoltare software", "quantity": 2, "unitPrice": 1500 }],
+  "iban": "RO49AAAA1B31007593840000",
+  "ronRate": null
+}

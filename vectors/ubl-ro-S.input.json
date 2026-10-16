@@ -1,0 +1,30 @@
+{
+  "number": "INV-2026-0001",
+  "issueDate": "2026-10-01",
+  "dueDate": null,
+  "currency": "EUR",
+  "taxRate": 21,
+  "note": "Software development and hosting",
+  "seller": {
+    "name": "Beta Consulting SRL",
+    "taxId": "RO14399840",
+    "street": "Str. Memorandumului 10",
+    "city": "Cluj-Napoca",
+    "postalCode": "400114",
+    "country": "RO"
+  },
+  "buyer": {
+    "name": "Gamma SRL",
+    "taxId": "RO16341004",
+    "street": "Str. Lunga 3",
+    "city": "Brasov",
+    "postalCode": "500035",
+    "country": "Romania"
+  },
+  "lines": [
+    { "description": "Software development", "quantity": 10, "unitPrice": 80 },
+    { "description": "Hosting (October)", "quantity": 1, "unitPrice": 40 }
+  ],
+  "iban": "RO49AAAA1B31007593840000",
+  "ronRate": 5.0889
+}
