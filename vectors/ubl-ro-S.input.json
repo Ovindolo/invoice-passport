@@ -22,9 +22,18 @@
     "country": "Romania"
   },
   "lines": [
-    { "description": "Software development", "quantity": 10, "unitPrice": 80 },
-    { "description": "Hosting (October)", "quantity": 1, "unitPrice": 40 }
+    {
+      "description": "Software development",
+      "quantity": 10,
+      "unitPrice": 80
+    },
+    {
+      "description": "Hosting (October)",
+      "quantity": 1,
+      "unitPrice": 40
+    }
   ],
   "iban": "RO49AAAA1B31007593840000",
-  "ronRate": 5.0889
+  "ronRate": 5.0889,
+  "paymentReference": "RF16INV20260001"
 }

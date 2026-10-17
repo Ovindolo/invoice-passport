@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic camt.054.001.02 notification for tests; all names, accounts and references are fictitious.
+     It carries only the elements the parser reads (no balances), so it is not schema-complete. -->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.054.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <BkToCstmrDbtCdtNtfctn>
+    <GrpHdr><MsgId>NTF-77</MsgId><CreDtTm>2026-10-05T10:15:00</CreDtTm></GrpHdr>
+    <Ntfctn>
+      <Id>NTF-77-1</Id>
+      <Acct><Id><IBAN>RO49AAAA1B31007593840000</IBAN></Id></Acct>
+      <Ntry>
+        <Amt Ccy="RON">1500.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts>BOOK</Sts>
+        <BookgDt><DtTm>2026-10-05T09:58:12</DtTm></BookgDt>
+        <NtryDtls>
+          <TxDtls>
+            <Refs><AcctSvcrRef>RO-INST-99</AcctSvcrRef><EndToEndId>E2E-RON-1</EndToEndId></Refs>
+            <RltdPties>
+              <Dbtr><Nm>Alfa Soft SRL</Nm></Dbtr>
+              <DbtrAcct><Id><IBAN>RO09BCYP0000001234567890</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf><Ustrd>Contravaloare factura rf72 inv2 0260 060</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+    </Ntfctn>
+  </BkToCstmrDbtCdtNtfctn>
+</Document>

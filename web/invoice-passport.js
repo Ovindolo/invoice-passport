@@ -431,7 +431,8 @@ ${indent}<cbc:Percent>${rate}</cbc:Percent>`;
   <cbc:DocumentCurrencyCode>${currency}</cbc:DocumentCurrencyCode>${currency !== "RON" ? `
   <cbc:TaxCurrencyCode>RON</cbc:TaxCurrencyCode>` : ""}${partyXml("AccountingSupplierParty", input.seller, sellerCountry, sellerCounty, sellerVat)}${partyXml("AccountingCustomerParty", input.buyer, buyerCountry, buyerCounty, category === "S" && buyerVat)}${input.iban ? `
   <cac:PaymentMeans>
-    <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>
+    <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>${input.paymentReference ? `
+    <cbc:PaymentID>${esc(input.paymentReference.replace(/\s/g, ""))}</cbc:PaymentID>` : ""}
     <cac:PayeeFinancialAccount>
       <cbc:ID>${esc(input.iban.replace(/\s/g, ""))}</cbc:ID>
     </cac:PayeeFinancialAccount>
@@ -536,13 +537,13 @@ function rateBefore(tables, currency, operationDate) {
   };
   let best = null;
   for (const table of tables) {
-    for (const [date, rates] of table) {
-      if (date >= operationDate) continue;
+    for (const [date2, rates] of table) {
+      if (date2 >= operationDate) continue;
       const rate = rates.get(basis);
       if (rate === void 0) continue;
-      if (!best || date > best.date) best = {
+      if (!best || date2 > best.date) best = {
         rate,
-        date,
+        date: date2,
         basis
       };
     }
@@ -561,9 +562,9 @@ async function bnrRateBefore(currency, operationDate) {
 
 // src/sepa.ts
 var compact = (s) => s.replace(/\s+/g, "").toUpperCase();
-function mod97(alnum) {
+function mod97(alnum2) {
   let rest = 0;
-  for (const ch of alnum) {
+  for (const ch of alnum2) {
     const value = ch >= "A" && ch <= "Z" ? String(ch.charCodeAt(0) - 55) : ch;
     for (const digit of value) rest = (rest * 10 + Number(digit)) % 97;
   }
@@ -858,6 +859,301 @@ ${taxCategoryXml("        ", l.vatCategory, l.vatRate, false)}
     problems: []
   };
 }
+
+// src/xml.ts
+var ENTITIES = {
+  lt: "<",
+  gt: ">",
+  amp: "&",
+  quot: '"',
+  apos: "'"
+};
+function decode(s) {
+  return s.replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z]+);/g, (whole, ref) => {
+    if (ref[0] === "#") {
+      const code = ref[1] === "x" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);
+      return Number.isFinite(code) && code > 0 && code <= 1114111 ? String.fromCodePoint(code) : whole;
+    }
+    return ENTITIES[ref] ?? whole;
+  });
+}
+var localName = (qname) => qname.slice(qname.indexOf(":") + 1);
+function parseXml(xml) {
+  const root = {
+    name: "#document",
+    attrs: {},
+    children: [],
+    text: ""
+  };
+  const stack = [
+    root
+  ];
+  let i = 0;
+  const n = xml.length;
+  while (i < n) {
+    const lt = xml.indexOf("<", i);
+    if (lt === -1) {
+      stack[stack.length - 1].text += decode(xml.slice(i));
+      break;
+    }
+    if (lt > i) stack[stack.length - 1].text += decode(xml.slice(i, lt));
+    if (xml.startsWith("<!--", lt)) {
+      const end = xml.indexOf("-->", lt + 4);
+      if (end === -1) throw new Error("XML: unterminated comment");
+      i = end + 3;
+    } else if (xml.startsWith("<![CDATA[", lt)) {
+      const end = xml.indexOf("]]>", lt + 9);
+      if (end === -1) throw new Error("XML: unterminated CDATA");
+      stack[stack.length - 1].text += xml.slice(lt + 9, end);
+      i = end + 3;
+    } else if (xml.startsWith("<?", lt)) {
+      const end = xml.indexOf("?>", lt + 2);
+      if (end === -1) throw new Error("XML: unterminated processing instruction");
+      i = end + 2;
+    } else if (xml.startsWith("<!", lt)) {
+      throw new Error("XML: DOCTYPE and other declarations are not accepted");
+    } else if (xml[lt + 1] === "/") {
+      const end = xml.indexOf(">", lt);
+      if (end === -1) throw new Error("XML: unterminated end tag");
+      const name = localName(xml.slice(lt + 2, end).trim());
+      const open = stack.pop();
+      if (!open || open === root || open.name !== name) throw new Error(`XML: unexpected </${name}>`);
+      i = end + 1;
+    } else {
+      let j = lt + 1;
+      let quote = "";
+      for (; j < n; j++) {
+        const c = xml[j];
+        if (quote) {
+          if (c === quote) quote = "";
+        } else if (c === '"' || c === "'") quote = c;
+        else if (c === ">") break;
+      }
+      if (j >= n) throw new Error("XML: unterminated start tag");
+      const selfClosing = xml[j - 1] === "/";
+      const body = xml.slice(lt + 1, selfClosing ? j - 1 : j);
+      const nameMatch = body.match(/^\s*([^\s/>]+)/);
+      if (!nameMatch) throw new Error("XML: tag without a name");
+      const node = {
+        name: localName(nameMatch[1]),
+        attrs: {},
+        children: [],
+        text: ""
+      };
+      for (const a of body.slice(nameMatch[0].length).matchAll(/([^\s=]+)\s*=\s*("([^"]*)"|'([^']*)')/g)) {
+        if (a[1].startsWith("xmlns")) continue;
+        node.attrs[localName(a[1])] = decode(a[3] ?? a[4] ?? "");
+      }
+      stack[stack.length - 1].children.push(node);
+      if (!selfClosing) stack.push(node);
+      i = j + 1;
+    }
+  }
+  if (stack.length !== 1) throw new Error(`XML: <${stack[stack.length - 1].name}> is not closed`);
+  return root;
+}
+function child(node, ...path) {
+  let cur = node;
+  for (const name of path) {
+    cur = cur?.children.find((c) => c.name === name);
+    if (!cur) return void 0;
+  }
+  return cur;
+}
+function children(node, name) {
+  return node ? node.children.filter((c) => c.name === name) : [];
+}
+function textAt(node, ...path) {
+  const t = child(node, ...path)?.text.trim();
+  return t ? t : null;
+}
+
+// src/camt.ts
+var ROOTS = {
+  BkToCstmrStmt: {
+    kind: "camt.053",
+    item: "Stmt"
+  },
+  BkToCstmrDbtCdtNtfctn: {
+    kind: "camt.054",
+    item: "Ntfctn"
+  },
+  BkToCstmrAcctRpt: {
+    kind: "camt.052",
+    item: "Rpt"
+  }
+};
+var date = (n) => {
+  const v = textAt(n, "Dt") ?? textAt(n, "DtTm");
+  return v ? v.slice(0, 10) : null;
+};
+var amountOf = (n) => {
+  if (!n) return null;
+  const amount = Number(n.text.trim());
+  const currency = n.attrs.Ccy;
+  return Number.isFinite(amount) && currency ? {
+    amount,
+    currency: currency.toUpperCase()
+  } : null;
+};
+var partyName = (party) => textAt(party, "Nm") ?? textAt(party, "Pty", "Nm");
+var nullIfNotProvided = (v) => v && v.toUpperCase() !== "NOTPROVIDED" ? v : null;
+function parseCamt(xml) {
+  const doc = parseXml(xml);
+  const document = child(doc, "Document");
+  const rootNode = document?.children.find((c) => c.name in ROOTS);
+  if (!rootNode) throw new Error("not an ISO 20022 camt.052, camt.053 or camt.054 document");
+  const { kind, item } = ROOTS[rootNode.name];
+  const transactions = [];
+  for (const [si, stmt] of children(rootNode, item).entries()) {
+    const statementId = textAt(stmt, "Id") ?? `S${si + 1}`;
+    const accountIban = textAt(stmt, "Acct", "Id", "IBAN");
+    for (const [ei, entry] of children(stmt, "Ntry").entries()) {
+      const entryAmount = amountOf(child(entry, "Amt"));
+      if (!entryAmount) continue;
+      const credit = textAt(entry, "CdtDbtInd") === "CRDT";
+      const statusNode = child(entry, "Sts");
+      const status = textAt(statusNode, "Cd") ?? (statusNode?.text.trim() || null);
+      const reversal = textAt(entry, "RvslInd") === "true";
+      const bookingDate = date(child(entry, "BookgDt"));
+      const valueDate = date(child(entry, "ValDt"));
+      const entryRef = textAt(entry, "AcctSvcrRef");
+      const details = children(entry, "NtryDtls").flatMap((d) => children(d, "TxDtls"));
+      const list = details.length > 0 ? details : [
+        void 0
+      ];
+      for (const [ti, tx] of list.entries()) {
+        const txAmount = list.length > 1 ? amountOf(child(tx, "Amt")) ?? amountOf(child(tx, "AmtDtls", "TxAmt", "Amt")) : null;
+        const amount = txAmount ?? entryAmount;
+        const rmt = child(tx, "RmtInf");
+        const structured = children(rmt, "Strd").map((s) => textAt(s, "CdtrRefInf", "Ref")).find((r) => !!r) ?? null;
+        const ustrd = children(rmt, "Ustrd").map((u) => u.text.trim()).filter(Boolean).join(" ");
+        const parties = child(tx, "RltdPties");
+        const counterparty = credit ? "Dbtr" : "Cdtr";
+        transactions.push({
+          key: `${statementId}/${ei + 1}/${ti + 1}`,
+          statementId,
+          accountIban,
+          amount: amount.amount,
+          currency: amount.currency,
+          credit,
+          status,
+          reversal,
+          bookingDate,
+          valueDate,
+          bankReference: textAt(tx, "Refs", "AcctSvcrRef") ?? entryRef,
+          endToEndId: nullIfNotProvided(textAt(tx, "Refs", "EndToEndId")),
+          creditorReference: structured,
+          remittance: ustrd || null,
+          counterpartyName: partyName(child(parties, counterparty)),
+          counterpartyIban: textAt(parties, `${counterparty}Acct`, "Id", "IBAN")
+        });
+      }
+    }
+  }
+  return {
+    kind,
+    messageId: textAt(rootNode, "GrpHdr", "MsgId"),
+    createdAt: textAt(rootNode, "GrpHdr", "CreDtTm"),
+    transactions
+  };
+}
+
+// src/reconcile.ts
+var alnum = (s) => s.toUpperCase().replace(/[^0-9A-Z]/g, "");
+var cents = (n) => Math.round(n * 100);
+function isIncomingBooked(t) {
+  return t.credit && !t.reversal && (t.status === null || t.status === "BOOK");
+}
+function transactionReference(t) {
+  const structured = t.creditorReference ? alnum(t.creditorReference) : null;
+  if (structured && isValidCreditorReference(structured)) return structured;
+  return findCreditorReference(`${t.creditorReference ?? ""} ${t.remittance ?? ""}`);
+}
+function mentionsNumber(t, number) {
+  const chars = alnum(number).split("");
+  if (chars.length < 2) return false;
+  const pattern = new RegExp(`(?<![0-9A-Z])${chars.join("[^0-9A-Z]?")}(?![0-9A-Z])`);
+  return pattern.test(`${t.remittance ?? ""} ${t.creditorReference ?? ""} ${t.endToEndId ?? ""}`.toUpperCase());
+}
+function reconcile(transactions, invoices) {
+  const result = {
+    matches: [],
+    ambiguous: [],
+    unmatched: [],
+    ignored: []
+  };
+  const usedInvoices = /* @__PURE__ */ new Set();
+  const pending = [];
+  for (const t of transactions) (isIncomingBooked(t) ? pending : result.ignored).push(t);
+  const take = (t, method, candidates) => {
+    const free = candidates.filter((i) => !usedInvoices.has(i.id));
+    if (free.length === 0) return false;
+    if (free.length > 1) {
+      result.ambiguous.push({
+        transaction: t,
+        candidates: free
+      });
+      return true;
+    }
+    const invoice = free[0];
+    usedInvoices.add(invoice.id);
+    const coverage = cents(t.amount) >= cents(invoice.amount) ? "full" : "partial";
+    result.matches.push({
+      invoice,
+      transaction: t,
+      method,
+      coverage,
+      autoApply: method !== "amount_only" && coverage === "full"
+    });
+    return true;
+  };
+  const passes = [
+    [
+      "reference",
+      (t, i) => {
+        const ref = transactionReference(t);
+        return !!ref && !!i.reference && alnum(i.reference) === ref;
+      }
+    ],
+    [
+      "number_and_amount",
+      (t, i) => mentionsNumber(t, i.number) && cents(t.amount) === cents(i.amount)
+    ],
+    [
+      "amount_only",
+      (t, i) => cents(t.amount) === cents(i.amount)
+    ]
+  ];
+  let queue = pending;
+  for (const [method, fits] of passes) {
+    const next = [];
+    for (const t of queue) {
+      const candidates = invoices.filter((i) => i.currency.toUpperCase() === t.currency && fits(t, i));
+      if (!take(t, method, candidates)) next.push(t);
+    }
+    queue = next;
+  }
+  result.unmatched = queue;
+  return result;
+}
+function evidenceForMatch(match, recordedAt) {
+  const t = match.transaction;
+  return {
+    ...bankTransferEvidence({
+      scheme: t.currency === "EUR" ? "SEPA" : "bank_transfer",
+      amount: t.amount,
+      currency: t.currency,
+      recordedAt,
+      bookingDate: t.bookingDate,
+      endToEndId: t.endToEndId,
+      creditorReference: transactionReference(t),
+      debtorIbanLast4: t.counterpartyIban,
+      bankReference: t.bankReference
+    }),
+    match_method: match.method
+  };
+}
 export {
   CIUS_RO,
   CIUS_RO_FORMAT,
@@ -872,24 +1168,33 @@ export {
   buildPeppolInvoice,
   buildUblInvoice,
   canonicalJson,
+  child,
+  children,
   countryCode,
   countyFor,
   creditorReference,
   eInvoiceReference,
+  evidenceForMatch,
   fetchYear,
   findCreditorReference,
   formatCreditorReference,
   generateSigningKey,
+  isIncomingBooked,
   isValidCreditorReference,
   isValidIban,
   jwsHeader,
   loadSigningKey,
   parseBnrXml,
+  parseCamt,
+  parseXml,
   passportDigest,
   rateBefore,
+  reconcile,
   sha256Hex,
   signCanonical,
   signPassport,
+  textAt,
+  transactionReference,
   validCui,
   verifyJws,
   verifyPassport,

@@ -94,6 +94,8 @@ export interface UblInvoiceInput {
   buyer: UblParty;
   lines: UblLine[];
   iban: string | null;
+  /** payment reference (BT-83), e.g. the RF creditor reference printed on the invoice */
+  paymentReference?: string | null;
   /** RON per unit of currency (BNR), required when currency is not RON */
   ronRate: number | null;
 }
@@ -317,7 +319,12 @@ export function buildUblInvoice(input: UblInvoiceInput): UblResult {
     input.iban
       ? `
   <cac:PaymentMeans>
-    <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>
+    <cbc:PaymentMeansCode>30</cbc:PaymentMeansCode>${
+        input.paymentReference
+          ? `
+    <cbc:PaymentID>${esc(input.paymentReference.replace(/\s/g, ""))}</cbc:PaymentID>`
+          : ""
+      }
     <cac:PayeeFinancialAccount>
       <cbc:ID>${esc(input.iban.replace(/\s/g, ""))}</cbc:ID>
     </cac:PayeeFinancialAccount>

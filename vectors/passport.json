@@ -79,7 +79,7 @@
   "fiscal": {
     "e_invoice": {
       "format": "UBL-2.1/CIUS-RO-1.0.1",
-      "sha256": "322ba19525daf1271af804c71fa969495e655bbd9ab07a160d8a554a32e27681",
+      "sha256": "7b0df3f38f4fa5f935fe1eb8655078539fc7b46758b1171452969019ce491fc7",
       "submission_id": null
     }
   }

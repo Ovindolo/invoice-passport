@@ -28,8 +28,8 @@ if [ ! -x "$CACHE/venv/bin/python" ]; then
 fi
 
 status=0
-for f in ../vectors/*.xml; do
+for f in ../vectors/ubl-*.xml ../vectors/peppol-*.xml; do
   xmllint --noout --schema "$CACHE/ubl/xsd/maindoc/UBL-Invoice-2.1.xsd" "$f" 2>/dev/null || { echo "XSD FAIL $f"; status=1; }
 done
-"$CACHE/venv/bin/python" schematron.py "$CACHE" "$PEPPOL_VERSION" ../vectors/*.xml || status=1
+"$CACHE/venv/bin/python" schematron.py "$CACHE" "$PEPPOL_VERSION" ../vectors/ubl-*.xml ../vectors/peppol-*.xml || status=1
 exit $status

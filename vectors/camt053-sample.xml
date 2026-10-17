@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic camt.053.001.08 statement for tests; all names, accounts and references are fictitious.
+     It carries only the elements the parser reads (no balances), so it is not schema-complete. -->
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.08">
+  <BkToCstmrStmt>
+    <GrpHdr>
+      <MsgId>STMT-2026-10-03</MsgId>
+      <CreDtTm>2026-10-04T06:00:00+02:00</CreDtTm>
+    </GrpHdr>
+    <Stmt>
+      <Id>2026-10-03-001</Id>
+      <Acct>
+        <Id><IBAN>RO49AAAA1B31007593840000</IBAN></Id>
+        <Ccy>EUR</Ccy>
+      </Acct>
+      <Ntry>
+        <Amt Ccy="EUR">1016.40</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><Dt>2026-10-03</Dt></BookgDt>
+        <ValDt><Dt>2026-10-03</Dt></ValDt>
+        <AcctSvcrRef>BNK-0001</AcctSvcrRef>
+        <BkTxCd><Domn><Cd>PMNT</Cd><Fmly><Cd>RCDT</Cd><SubFmlyCd>ESCT</SubFmlyCd></Fmly></Domn></BkTxCd>
+        <NtryDtls>
+          <TxDtls>
+            <Refs><EndToEndId>E2E-GAMMA-0001</EndToEndId></Refs>
+            <RltdPties>
+              <Dbtr><Pty><Nm>Gamma SRL</Nm></Pty></Dbtr>
+              <DbtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></DbtrAcct>
+            </RltdPties>
+            <RmtInf>
+              <Strd><CdtrRefInf><Tp><CdOrPrtry><Cd>SCOR</Cd></CdOrPrtry></Tp><Ref>RF16INV20260001</Ref></CdtrRefInf></Strd>
+            </RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">500.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><Dt>2026-10-03</Dt></BookgDt>
+        <AcctSvcrRef>BNK-0002</AcctSvcrRef>
+        <NtryDtls>
+          <TxDtls>
+            <Refs><EndToEndId>NOTPROVIDED</EndToEndId></Refs>
+            <RltdPties><Dbtr><Pty><Nm>Klant BV</Nm></Pty></Dbtr></RltdPties>
+            <RmtInf><Ustrd>Plata factura PF-7 consultanta</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">79.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><Dt>2026-10-03</Dt></BookgDt>
+        <NtryDtls><TxDtls><RmtInf><Ustrd>thanks &amp; regards</Ustrd></RmtInf></TxDtls></NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">25.00</Amt>
+        <CdtDbtInd>DBIT</CdtDbtInd>
+        <Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><Dt>2026-10-03</Dt></BookgDt>
+        <NtryDtls><TxDtls><RmtInf><Ustrd>Account fee</Ustrd></RmtInf></TxDtls></NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">300.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts><Cd>PDNG</Cd></Sts>
+        <BookgDt><Dt>2026-10-03</Dt></BookgDt>
+        <NtryDtls><TxDtls><RmtInf><Ustrd>RF51INV20260050</Ustrd></RmtInf></TxDtls></NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">500.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><Dt>2026-10-03</Dt></BookgDt>
+        <AcctSvcrRef>BNK-BATCH-7</AcctSvcrRef>
+        <NtryDtls>
+          <TxDtls>
+            <Refs><EndToEndId>E2E-B1</EndToEndId></Refs>
+            <Amt Ccy="EUR">300.00</Amt>
+            <RmtInf><Strd><CdtrRefInf><Ref>RF51INV20260050</Ref></CdtrRefInf></Strd></RmtInf>
+          </TxDtls>
+          <TxDtls>
+            <Refs><EndToEndId>E2E-B2</EndToEndId></Refs>
+            <Amt Ccy="EUR">200.00</Amt>
+            <RmtInf><Ustrd>Invoice RF24 INV2 0260 051</Ustrd></RmtInf>
+          </TxDtls>
+        </NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">1000.00</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><Dt>2026-10-03</Dt></BookgDt>
+        <NtryDtls><TxDtls><RmtInf><Strd><CdtrRefInf><Ref>RF94INV20260052</Ref></CdtrRefInf></Strd></RmtInf></TxDtls></NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="EUR">42.42</Amt>
+        <CdtDbtInd>CRDT</CdtDbtInd>
+        <Sts><Cd>BOOK</Cd></Sts>
+        <BookgDt><Dt>2026-10-03</Dt></BookgDt>
+        <NtryDtls><TxDtls><RmtInf><Ustrd>refund</Ustrd></RmtInf></TxDtls></NtryDtls>
+      </Ntry>
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>
