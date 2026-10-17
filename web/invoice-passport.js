@@ -1154,13 +1154,167 @@ function evidenceForMatch(match, recordedAt) {
     match_method: match.method
   };
 }
+
+// src/onchain.ts
+var STABLECOINS = [
+  {
+    chain: "base",
+    asset: "USDC",
+    address: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    decimals: 6
+  },
+  {
+    chain: "base",
+    asset: "USDT",
+    address: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2",
+    decimals: 6
+  },
+  {
+    chain: "ethereum",
+    asset: "USDC",
+    address: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    decimals: 6
+  },
+  {
+    chain: "ethereum",
+    asset: "USDT",
+    address: "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    decimals: 6
+  },
+  {
+    chain: "bsc",
+    asset: "USDT",
+    address: "0x55d398326f99059ff775485246999027b3197955",
+    decimals: 18
+  },
+  {
+    chain: "bsc",
+    asset: "USDC",
+    address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+    decimals: 18
+  }
+];
+var CHAIN_NAMES = {
+  base: "Base",
+  ethereum: "Ethereum",
+  bsc: "BNB Chain"
+};
+var TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+var USD_CURRENCIES = [
+  "USD",
+  "USDC",
+  "USDT"
+];
+var isEvmAddress = (v) => !!v && /^0x[0-9a-fA-F]{40}$/.test(v.trim());
+function parseChain(network) {
+  const n = String(network ?? "").toLowerCase();
+  if (/\bbase\b/.test(n)) return "base";
+  if (/bep-?20|\bbsc\b|\bbnb\b/.test(n)) return "bsc";
+  if (/erc-?20|\beth(ereum)?\b/.test(n)) return "ethereum";
+  return null;
+}
+var addressTopic = (address) => "0x" + address.toLowerCase().replace(/^0x/, "").padStart(64, "0");
+function fnv1a(text) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+function uniquePayMicros(invoiceId, total) {
+  const tag = fnv1a(invoiceId) % 9999 + 1;
+  return BigInt(Math.round(total * 100)) * 10000n + BigInt(tag);
+}
+function formatMicros(micros) {
+  const s = micros.toString().padStart(7, "0");
+  return `${s.slice(0, -6)}.${s.slice(-6)}`;
+}
+function uniquePayAmount(invoiceId, total) {
+  return formatMicros(uniquePayMicros(invoiceId, total));
+}
+var topicAddress = (topic) => "0x" + topic.slice(-40).toLowerCase();
+function decodeTransfer(chain, log) {
+  if (log.removed) return null;
+  const coin = STABLECOINS.find((c) => c.chain === chain && c.address === log.address.toLowerCase());
+  if (!coin || log.topics[0]?.toLowerCase() !== TRANSFER_TOPIC || log.topics.length !== 3) return null;
+  const value = BigInt(log.data === "0x" ? 0 : log.data);
+  const scale = 10n ** BigInt(coin.decimals - 6);
+  return {
+    chain,
+    asset: coin.asset,
+    token: coin.address,
+    from: topicAddress(log.topics[1]),
+    to: topicAddress(log.topics[2]),
+    value,
+    micros: value % scale === 0n ? value / scale : null,
+    blockNumber: Number(BigInt(log.blockNumber)),
+    txHash: log.transactionHash.toLowerCase(),
+    logIndex: Number(BigInt(log.logIndex))
+  };
+}
+function transferAmount(t) {
+  const decimals = STABLECOINS.find((c) => c.chain === t.chain && c.address === t.token)?.decimals ?? 6;
+  const s = t.value.toString().padStart(decimals + 1, "0");
+  const whole = s.slice(0, -decimals);
+  const frac = s.slice(-decimals).replace(/0+$/, "");
+  return frac ? `${whole}.${frac}` : whole;
+}
+function matchTransfers(transfers, invoices) {
+  const open = invoices.filter((i) => USD_CURRENCIES.includes(i.currency.toUpperCase()));
+  const used = /* @__PURE__ */ new Set();
+  const out = [];
+  for (const t of transfers) {
+    const exact = t.micros === null ? void 0 : open.find((i) => !used.has(i.id) && uniquePayMicros(i.id, i.total) === t.micros);
+    if (exact) {
+      used.add(exact.id);
+      out.push({
+        transfer: t,
+        invoice: exact,
+        method: "exact"
+      });
+      continue;
+    }
+    const byTotal = t.micros === null ? [] : open.filter((i) => !used.has(i.id) && BigInt(Math.round(i.total * 100)) * 10000n === t.micros);
+    out.push(byTotal.length === 1 ? {
+      transfer: t,
+      invoice: byTotal[0],
+      method: "amount"
+    } : {
+      transfer: t,
+      invoice: null,
+      method: null
+    });
+  }
+  return out;
+}
+function onchainEvidence(t, recordedAt, method) {
+  return {
+    rail: "onchain",
+    chain: t.chain,
+    asset: t.asset,
+    amount: Number(transferAmount(t)),
+    tx_hash: t.txHash,
+    log_index: t.logIndex,
+    from_address: t.from,
+    to_address: t.to,
+    block_number: t.blockNumber,
+    match_method: method,
+    recorded_at: recordedAt
+  };
+}
 export {
+  CHAIN_NAMES,
   CIUS_RO,
   CIUS_RO_FORMAT,
   LEGACY_SPECS,
   PASSPORT_SPEC,
   PEPPOL_BILLING_PROCESS,
   PEPPOL_BIS_3,
+  STABLECOINS,
+  TRANSFER_TOPIC,
+  USD_CURRENCIES,
+  addressTopic,
   bankTransferEvidence,
   bnrBasis,
   bnrRateBefore,
@@ -1173,19 +1327,25 @@ export {
   countryCode,
   countyFor,
   creditorReference,
+  decodeTransfer,
   eInvoiceReference,
   evidenceForMatch,
   fetchYear,
   findCreditorReference,
   formatCreditorReference,
+  formatMicros,
   generateSigningKey,
+  isEvmAddress,
   isIncomingBooked,
   isValidCreditorReference,
   isValidIban,
   jwsHeader,
   loadSigningKey,
+  matchTransfers,
+  onchainEvidence,
   parseBnrXml,
   parseCamt,
+  parseChain,
   parseXml,
   passportDigest,
   rateBefore,
@@ -1195,6 +1355,9 @@ export {
   signPassport,
   textAt,
   transactionReference,
+  transferAmount,
+  uniquePayAmount,
+  uniquePayMicros,
   validCui,
   verifyJws,
   verifyPassport,

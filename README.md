@@ -11,22 +11,23 @@ The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 
 
 ## What is included
 
-| Module             |                                                                                                         |
-| ------------------ | ------------------------------------------------------------------------------------------------------- |
-| `src/canonical.ts` | Canonical JSON and SHA-256                                                                              |
-| `src/jws.ts`       | ES256 compact JWS: load / generate keys, sign, verify, verify against a JWKS                            |
-| `src/passport.ts`  | Build, sign and verify Invoice Passports                                                                |
-| `src/sepa.ts`      | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                               |
-| `src/camt.ts`      | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                         |
-| `src/reconcile.ts` | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                     |
-| `src/xml.ts`       | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                      |
-| `src/peppol.ts`    | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931): VAT categories S, Z, E, AE, K, G, O              |
-| `src/ubl.ts`       | UBL 2.1 invoice for RO e-Factura (CIUS-RO 1.0.1), VAT categories S and O, with CUI checks               |
-| `src/bnr.ts`       | National Bank of Romania reference rates, and the "last fixing before the operation date" rule          |
-| `cli/verify.ts`    | Command-line verifier                                                                                   |
-| `web/`             | Browser verifier page (`web/index.html`) and the bundled library                                        |
-| `conformance/`     | Checks every XML vector against the UBL 2.1 XSD and the official CEN EN 16931 and OpenPeppol schematron |
-| `vectors/`         | Test vectors: passport, JWS, JWKS, RO e-Factura invoices accepted by ANAF, Peppol BIS 3.0 invoices      |
+| Module             |                                                                                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `src/canonical.ts` | Canonical JSON and SHA-256                                                                                  |
+| `src/jws.ts`       | ES256 compact JWS: load / generate keys, sign, verify, verify against a JWKS                                |
+| `src/passport.ts`  | Build, sign and verify Invoice Passports                                                                    |
+| `src/sepa.ts`      | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                                   |
+| `src/camt.ts`      | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                             |
+| `src/reconcile.ts` | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                         |
+| `src/onchain.ts`   | Direct USDC/USDT payments on Base, Ethereum, BNB Chain: unique pay amounts, Transfer log decoding, matching |
+| `src/xml.ts`       | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                          |
+| `src/peppol.ts`    | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931): VAT categories S, Z, E, AE, K, G, O                  |
+| `src/ubl.ts`       | UBL 2.1 invoice for RO e-Factura (CIUS-RO 1.0.1), VAT categories S and O, with CUI checks                   |
+| `src/bnr.ts`       | National Bank of Romania reference rates, and the "last fixing before the operation date" rule              |
+| `cli/verify.ts`    | Command-line verifier                                                                                       |
+| `web/`             | Browser verifier page (`web/index.html`) and the bundled library                                            |
+| `conformance/`     | Checks every XML vector against the UBL 2.1 XSD and the official CEN EN 16931 and OpenPeppol schematron     |
+| `vectors/`         | Test vectors: passport, JWS, JWKS, RO e-Factura invoices accepted by ANAF, Peppol BIS 3.0 invoices          |
 
 ## Usage
 
@@ -109,6 +110,7 @@ deno task conformance  # XSD + official EN 16931 / Peppol schematron on every XM
 - Peppol BIS Billing 3.0 for EU invoicing: VAT categories S, Z, E, AE, K, G, O, mixed rates, RF payment reference, tax
   currency, and the fatal national rules for DE, IT and NL sellers.
 - Signatures: ES256 only.
+- Stablecoin payments to the seller's own wallet, matched by a unique pay amount per invoice.
 - Bank reconciliation: camt.052/053/054 import and matching by RF reference, invoice number + amount, or amount.
 - Planned: credit notes, other national CIUS, key rotation guidance.
 
