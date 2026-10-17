@@ -1,18 +1,22 @@
 {
   "name": "@invoice-passport/core",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "license": "Apache-2.0",
   "exports": "./mod.ts",
   "tasks": {
     "test": "deno test --no-lock --allow-read",
     "check": "deno check mod.ts cli/verify.ts scripts/gen-vectors.ts",
     "vectors": "deno run --allow-read --allow-write scripts/gen-vectors.ts",
-    "verify": "deno run --allow-read --allow-net cli/verify.ts"
+    "verify": "deno run --allow-read --allow-net cli/verify.ts",
+    "bundle": "deno bundle --platform browser --format esm -o web/invoice-passport.js mod.ts",
+    "conformance": "./conformance/run.sh"
   },
   "fmt": {
     "lineWidth": 120,
     "exclude": [
-      "vectors/"
+      "vectors/",
+      "web/invoice-passport.js",
+      "conformance/.cache/"
     ]
   },
   "lint": {
@@ -20,7 +24,11 @@
       "exclude": [
         "no-explicit-any"
       ]
-    }
+    },
+    "exclude": [
+      "web/invoice-passport.js",
+      "conformance/.cache/"
+    ]
   },
   "lock": false
 }

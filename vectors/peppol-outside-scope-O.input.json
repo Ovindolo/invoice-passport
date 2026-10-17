@@ -1,0 +1,53 @@
+{
+  "number": "PF-7",
+  "issueDate": "2026-10-08",
+  "dueDate": "2026-10-22",
+  "currency": "EUR",
+  "buyerReference": "Ref 7",
+  "seller": {
+    "name": "Popescu Ion PFA",
+    "endpoint": {
+      "scheme": "0191",
+      "id": "14399840"
+    },
+    "vatId": null,
+    "legalId": {
+      "id": "J12/1234/2020"
+    },
+    "street": "Str. Memorandumului 10",
+    "city": "Cluj-Napoca",
+    "postalCode": "400114",
+    "subdivision": "RO-CJ",
+    "country": "RO",
+    "contact": {
+      "name": "Ion Popescu",
+      "email": "billing@beta.example"
+    }
+  },
+  "buyer": {
+    "name": "Klant BV",
+    "endpoint": {
+      "scheme": "0106",
+      "id": "12345678"
+    },
+    "vatId": null,
+    "street": "Damrak 1",
+    "city": "Amsterdam",
+    "postalCode": "1012 LG",
+    "country": "NL"
+  },
+  "lines": [
+    {
+      "description": "Consulting",
+      "quantity": 1,
+      "unitPrice": 500,
+      "vatCategory": "O",
+      "vatRate": 0
+    }
+  ],
+  "payment": {
+    "iban": "RO49AAAA1B31007593840000",
+    "bic": "AAAAROBU",
+    "reference": "RF18539007547034"
+  }
+}

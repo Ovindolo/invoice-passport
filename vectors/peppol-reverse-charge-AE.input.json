@@ -1,0 +1,58 @@
+{
+  "number": "INV-2026-0042",
+  "issueDate": "2026-10-05",
+  "dueDate": "2026-10-19",
+  "currency": "EUR",
+  "buyerReference": "Ana Schmidt",
+  "seller": {
+    "name": "Beta Consulting SRL",
+    "endpoint": {
+      "scheme": "9947",
+      "id": "RO14399840"
+    },
+    "vatId": "RO14399840",
+    "legalId": {
+      "id": "J12/1234/2020"
+    },
+    "street": "Str. Memorandumului 10",
+    "city": "Cluj-Napoca",
+    "postalCode": "400114",
+    "subdivision": "RO-CJ",
+    "country": "RO",
+    "contact": {
+      "name": "Ion Popescu",
+      "email": "billing@beta.example"
+    }
+  },
+  "buyer": {
+    "name": "Kunde AG",
+    "endpoint": {
+      "scheme": "9930",
+      "id": "DE811907980"
+    },
+    "vatId": "DE811907980",
+    "street": "Marktplatz 5",
+    "city": "Munich",
+    "postalCode": "80331",
+    "country": "DE"
+  },
+  "lines": [
+    {
+      "description": "Software development (October)",
+      "quantity": 40,
+      "unitCode": "HUR",
+      "unitPrice": 55,
+      "vatCategory": "AE",
+      "vatRate": 0
+    }
+  ],
+  "payment": {
+    "iban": "RO49AAAA1B31007593840000",
+    "bic": "AAAAROBU",
+    "reference": "RF18539007547034"
+  },
+  "taxCurrency": {
+    "code": "RON",
+    "rate": 5.0889
+  }
+}

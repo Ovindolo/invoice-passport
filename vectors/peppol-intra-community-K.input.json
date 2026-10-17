@@ -1,0 +1,58 @@
+{
+  "number": "INV-2026-0043",
+  "issueDate": "2026-10-06",
+  "dueDate": "2026-11-05",
+  "currency": "EUR",
+  "orderReference": "PO-NL-77",
+  "seller": {
+    "name": "Beta Consulting SRL",
+    "endpoint": {
+      "scheme": "9947",
+      "id": "RO14399840"
+    },
+    "vatId": "RO14399840",
+    "legalId": {
+      "id": "J12/1234/2020"
+    },
+    "street": "Str. Memorandumului 10",
+    "city": "Cluj-Napoca",
+    "postalCode": "400114",
+    "subdivision": "RO-CJ",
+    "country": "RO",
+    "contact": {
+      "name": "Ion Popescu",
+      "email": "billing@beta.example"
+    }
+  },
+  "buyer": {
+    "name": "Klant BV",
+    "endpoint": {
+      "scheme": "0106",
+      "id": "12345678"
+    },
+    "vatId": "NL123456789B01",
+    "street": "Damrak 1",
+    "city": "Amsterdam",
+    "postalCode": "1012 LG",
+    "country": "NL"
+  },
+  "lines": [
+    {
+      "description": "Hardware wallet",
+      "quantity": 10,
+      "unitCode": "H87",
+      "unitPrice": 79,
+      "vatCategory": "K",
+      "vatRate": 0
+    }
+  ],
+  "delivery": {
+    "date": "2026-10-06",
+    "country": "NL"
+  },
+  "payment": {
+    "iban": "RO49AAAA1B31007593840000",
+    "bic": "AAAAROBU",
+    "reference": "RF18539007547034"
+  }
+}

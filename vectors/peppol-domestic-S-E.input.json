@@ -1,0 +1,70 @@
+{
+  "number": "2026-100",
+  "issueDate": "2026-10-01",
+  "dueDate": "2026-10-31",
+  "currency": "EUR",
+  "buyerReference": "PO-4711",
+  "seller": {
+    "name": "Muster Software GmbH",
+    "endpoint": {
+      "scheme": "9930",
+      "id": "DE123456789"
+    },
+    "vatId": "DE123456789",
+    "street": "Hauptstrasse 1",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "DE",
+    "contact": {
+      "name": "Max Mustermann",
+      "phone": "+49 30 1234567",
+      "email": "rechnung@muster.example"
+    }
+  },
+  "buyer": {
+    "name": "Kunde AG",
+    "endpoint": {
+      "scheme": "9930",
+      "id": "DE811907980"
+    },
+    "vatId": "DE811907980",
+    "street": "Marktplatz 5",
+    "city": "Munich",
+    "postalCode": "80331",
+    "country": "DE"
+  },
+  "lines": [
+    {
+      "description": "Software licence",
+      "quantity": 2,
+      "unitPrice": 450,
+      "vatCategory": "S",
+      "vatRate": 19
+    },
+    {
+      "description": "Books",
+      "quantity": 3,
+      "unitPrice": 19.9,
+      "unitCode": "H87",
+      "vatCategory": "S",
+      "vatRate": 7
+    },
+    {
+      "description": "Training (exempt)",
+      "quantity": 1,
+      "unitPrice": 300,
+      "vatCategory": "E",
+      "vatRate": 0
+    }
+  ],
+  "exemptionReasons": {
+    "E": {
+      "text": "Exempt under §4 Nr. 21 UStG"
+    }
+  },
+  "payment": {
+    "iban": "DE89370400440532013000",
+    "reference": "RF18539007547034"
+  },
+  "note": "Thank you for your business"
+}

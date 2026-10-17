@@ -4,6 +4,7 @@
  * real passports. A missing key is generated.
  */
 import { buildUblInvoice, type UblInvoiceInput } from "../src/ubl.ts";
+import { buildPeppolInvoice, type PeppolInvoiceInput } from "../src/peppol.ts";
 import { generateSigningKey, loadSigningKey } from "../src/jws.ts";
 import { buildPassport, CIUS_RO_FORMAT, eInvoiceReference, type PassportInput, signPassport } from "../mod.ts";
 
@@ -26,6 +27,14 @@ for (const name of ["ubl-ro-O", "ubl-ro-S"]) {
   const result = buildUblInvoice(input);
   if (!result.xml) throw new Error(`${name}: ${result.problems.join("; ")}`);
   await write(`${name}.xml`, result.xml);
+}
+
+for await (const entry of Deno.readDir(dir)) {
+  const m = entry.name.match(/^(peppol-.+)\.input\.json$/);
+  if (!m) continue;
+  const result = buildPeppolInvoice(JSON.parse(await read(entry.name)) as PeppolInvoiceInput);
+  if (!result.xml) throw new Error(`${m[1]}: ${result.problems.join("; ")}`);
+  await write(`${m[1]}.xml`, result.xml);
 }
 
 const input = JSON.parse(await read("sample-input.json")) as PassportInput;

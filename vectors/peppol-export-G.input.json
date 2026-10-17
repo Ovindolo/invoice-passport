@@ -1,0 +1,53 @@
+{
+  "number": "INV-2026-0044",
+  "issueDate": "2026-10-07",
+  "currency": "USD",
+  "buyerReference": "ACME-1",
+  "paymentTerms": "Payable within 14 days",
+  "seller": {
+    "name": "Beta Consulting SRL",
+    "endpoint": {
+      "scheme": "9947",
+      "id": "RO14399840"
+    },
+    "vatId": "RO14399840",
+    "legalId": {
+      "id": "J12/1234/2020"
+    },
+    "street": "Str. Memorandumului 10",
+    "city": "Cluj-Napoca",
+    "postalCode": "400114",
+    "subdivision": "RO-CJ",
+    "country": "RO",
+    "contact": {
+      "name": "Ion Popescu",
+      "email": "billing@beta.example"
+    }
+  },
+  "buyer": {
+    "name": "Client Inc.",
+    "endpoint": {
+      "scheme": "0060",
+      "id": "123456789"
+    },
+    "street": "1 Market St",
+    "city": "San Francisco",
+    "postalCode": "94105",
+    "country": "US"
+  },
+  "lines": [
+    {
+      "description": "Hardware wallet",
+      "quantity": 5,
+      "unitCode": "H87",
+      "unitPrice": 89,
+      "vatCategory": "G",
+      "vatRate": 0
+    }
+  ],
+  "payment": {
+    "iban": "RO49AAAA1B31007593840000",
+    "bic": "AAAAROBU",
+    "reference": "RF18539007547034"
+  }
+}

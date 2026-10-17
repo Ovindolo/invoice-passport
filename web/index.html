@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Invoice Passport Verifier</title>
+    <style>
+    :root {
+      --bg: #fafaf9;
+      --panel: #ffffff;
+      --text: #1c1917;
+      --muted: #57534e;
+      --line: #e7e5e4;
+      --accent: #1d4ed8;
+      --ok-bg: #ecfdf5;
+      --ok: #047857;
+      --bad-bg: #fef2f2;
+      --bad: #b91c1c;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0c0a09;
+        --panel: #1c1917;
+        --text: #f5f5f4;
+        --muted: #a8a29e;
+        --line: #292524;
+        --accent: #60a5fa;
+        --ok-bg: #022c22;
+        --ok: #34d399;
+        --bad-bg: #2a0a0a;
+        --bad: #f87171;
+      }
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 15px/1.5 system-ui, sans-serif;
+    }
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 16px 64px;
+    }
+    h1 {
+      font-size: 24px;
+      margin: 0 0 4px;
+    }
+    h2 {
+      font-size: 15px;
+      margin: 24px 0 8px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--muted);
+    }
+    p.lead {
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin: 16px 0 6px;
+    }
+    .hint {
+      font-weight: 400;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    textarea,
+    input[type=text] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--text);
+      font: 13px/1.45 var(--mono);
+    }
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    button {
+      padding: 9px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+    }
+    button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+    .banner {
+      margin-top: 24px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+    .banner.ok {
+      background: var(--ok-bg);
+      color: var(--ok);
+    }
+    .banner.bad {
+      background: var(--bad-bg);
+      color: var(--bad);
+    }
+    .banner small {
+      display: block;
+      font-weight: 400;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 4px 16px;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    td,
+    th {
+      text-align: left;
+      padding: 8px 8px 8px 0;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    tr:last-child td {
+      border-bottom: 0;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 500;
+      width: 34%;
+    }
+    td.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+    code,
+    pre {
+      font-family: var(--mono);
+      font-size: 12.5px;
+      word-break: break-all;
+    }
+    pre {
+      white-space: pre-wrap;
+      margin: 12px 0;
+    }
+    details summary {
+      cursor: pointer;
+      color: var(--muted);
+      margin-top: 24px;
+    }
+    footer {
+      margin-top: 40px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    a {
+      color: var(--accent);
+    }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Invoice Passport Verifier</h1>
+      <p
+        class="lead">Checks an issuer's signature on an Invoice Passport and shows what it states about the invoice and its
+    payment. Everything runs in your browser; nothing is uploaded.</p>
+
+      <label for="jws">Passport <span class="hint">— compact JWS, or an https URL that returns one</span></label>
+      <textarea id="jws" spellcheck="false" placeholder="eyJhbGciOiJFUzI1NiIs…"></textarea>
+
+      <label for="jwks">Issuer keys <span class="hint">— JWKS URL or JSON</span></label>
+      <textarea id="jwks" spellcheck="false" placeholder="https://issuer.example/.well-known/jwks.json"></textarea>
+
+      <label
+        for="xml">E-invoice XML <span class="hint">— optional; checks it is the exact file the passport refers to</span></label>
+      <input id="xml" type="file" accept=".xml,application/xml,text/xml">
+
+      <div class="row">
+        <button class="primary" id="verify">Verify</button>
+        <button id="example">Load example</button>
+      </div>
+
+      <div id="out"></div>
+
+      <footer>Open source (Apache-2.0): <a href="https://github.com/Ovindolo/invoice-passport">github.com/Ovindolo/invoice-passport</a>
+    · <a href="https://github.com/Ovindolo/invoice-passport/blob/main/SPEC.md">specification</a></footer>
+    </main>
+    <script type="module">
+    import { sha256Hex, verifyPassport } from "./invoice-passport.js";
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (v) =>
+      String(v ?? "—").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+    const isUrl = (s) => /^https?:\/\//i.test(s.trim());
+
+    async function load(value) {
+      const v = value.trim();
+      if (!isUrl(v)) return v;
+      const res = await fetch(v);
+      if (!res.ok) throw new Error(`GET ${v} returned HTTP ${res.status}`);
+      return (await res.text()).trim();
+    }
+
+    const rows = (pairs) =>
+      `<table>${
+        pairs.filter(([, v]) => v !== undefined).map(([k, v]) => `<tr><th>${esc(k)}</th><td>${v}</td></tr>`).join("")
+      }</table>`;
+    const money = (n, cur) => (n === null || n === undefined ? "—" : `${Number(n).toFixed(2)} ${esc(cur)}`);
+
+    function render(result, xmlCheck) {
+      if (!result.ok) {
+        const why = result.reason === "unknown_spec"
+          ? "The signature is valid but this is not an Invoice Passport v0.1."
+          : "The signature does not match any of the issuer's keys, or the passport was changed after signing.";
+        return `<div class="banner bad">Not valid<small>${why}</small></div>`;
+      }
+      const p = result.passport, inv = p.invoice ?? {}, pay = p.payment ?? {}, fiscal = p.fiscal?.e_invoice;
+      let html = `<div class="banner ok">Valid signature<small>Signed by key <code>${esc(result.kid)}</code> ·
+        spec <code>${esc(p.spec)}</code>. A valid signature proves who made these statements; check the payment evidence
+        below independently.</small></div>`;
+      if (xmlCheck) {
+        html += `<div class="banner ${xmlCheck.match ? "ok" : "bad"}">${
+          xmlCheck.match ? "E-invoice XML matches" : "E-invoice XML does not match"
+        }<small>SHA-256 of your file: <code>${esc(xmlCheck.hash)}</code></small></div>`;
+      }
+      html += `<h2>Invoice</h2><div class="card">${
+        rows([
+          ["Number", esc(inv.number)],
+          ["Issued", esc(inv.issue_date)],
+          ["Due", esc(inv.due_date)],
+          [
+            "Seller",
+            `${esc(p.seller?.name)}<br><span class="hint">${esc(p.seller?.tax_id)} · ${esc(p.seller?.country)}</span>`,
+          ],
+          [
+            "Buyer",
+            `${esc(p.buyer?.name)}<br><span class="hint">${esc(p.buyer?.tax_id)} · ${esc(p.buyer?.country)}</span>`,
+          ],
+          ["Total", money(inv.total, inv.currency)],
+          ["E-invoice", fiscal ? `${esc(fiscal.format)}<br><code>${esc(fiscal.sha256)}</code>` : "—"],
+        ])
+      }</div>`;
+      if (Array.isArray(inv.lines) && inv.lines.length) {
+        html +=
+          `<h2>Lines</h2><div class="card"><table><tr><th>Description</th><th>Qty</th><th>Unit price</th><th>Amount</th></tr>${
+            inv.lines.map((l) =>
+              `<tr><td>${esc(l.description)}</td><td class="num">${esc(l.quantity)}</td>
+            <td class="num">${money(l.unit_price, "")}</td><td class="num">${money(l.amount, "")}</td></tr>`
+            ).join("")
+          }</table></div>`;
+      }
+      html += `<h2>Payment</h2><div class="card">${
+        rows([
+          ["Status", esc(pay.status)],
+          ["Paid at", esc(pay.paid_at)],
+          ["Method", esc(pay.method)],
+          ["Amount received", pay.amount_received === null ? undefined : money(pay.amount_received, inv.currency)],
+        ])
+      }</div>`;
+      for (const e of pay.evidence ?? []) {
+        html += `<h2>Evidence · ${esc(e.rail)}</h2><div class="card">${
+          rows(
+            Object.entries(e).filter(([k, v]) => k !== "rail" && v !== null).map((
+              [k, v],
+            ) => [k.replace(/_/g, " "), `<code>${esc(v)}</code>`]),
+          )
+        }</div>`;
+      }
+      if (Array.isArray(p.history) && p.history.length) {
+        html += `<h2>History</h2><div class="card">${
+          rows(p.history.map((h) => [h.at, `${esc(h.event)} <span class="hint">· ${esc(h.source)}</span>`]))
+        }</div>`;
+      }
+      html += `<details><summary>Raw passport JSON</summary><pre>${esc(JSON.stringify(p, null, 2))}</pre></details>`;
+      return html;
+    }
+
+    $("verify").addEventListener("click", async () => {
+      const out = $("out");
+      out.innerHTML = "";
+      try {
+        const jws = await load($("jws").value);
+        const jwks = JSON.parse(await load($("jwks").value));
+        const result = await verifyPassport(jws, jwks);
+        let xmlCheck = null;
+        const file = $("xml").files?.[0];
+        if (file && result.ok) {
+          const hash = await sha256Hex(await file.text());
+          xmlCheck = { hash, match: hash === result.passport.fiscal?.e_invoice?.sha256 };
+        }
+        out.innerHTML = render(result, xmlCheck);
+      } catch (err) {
+        out.innerHTML = `<div class="banner bad">Could not verify<small>${esc(err.message)}</small></div>`;
+      }
+    });
+
+    $("example").addEventListener("click", async () => {
+      const base = new URL("../vectors/", location.href);
+      try {
+        $("jws").value = (await (await fetch(new URL("passport.jws", base))).text()).trim();
+        $("jwks").value = (await (await fetch(new URL("jwks.json", base))).text()).trim();
+      } catch {
+        $("jws").value = "";
+        $("jwks").value = "";
+        $("out").innerHTML = `<div class="banner bad">Example files not found<small>Serve the repository root so
+          vectors/ is reachable next to web/.</small></div>`;
+      }
+    });
+    </script>
+  </body>
+</html>

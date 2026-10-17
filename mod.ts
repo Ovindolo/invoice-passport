@@ -7,3 +7,5 @@ export * from "./src/jws.ts";
 export * from "./src/passport.ts";
 export * from "./src/ubl.ts";
 export * from "./src/bnr.ts";
+export * from "./src/sepa.ts";
+export * from "./src/peppol.ts";

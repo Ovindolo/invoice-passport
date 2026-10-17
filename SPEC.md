@@ -66,12 +66,12 @@ Seller: `name`, `tax_id`, `address`, `country`, `iban`. Buyer: `name`, `contact`
 Each evidence object has `rail` and `recorded_at` (when the issuer recorded it), plus rail-specific members. Recommended
 rails:
 
-| `rail`                                        | Members                                                                                                        |
-| --------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `bank_transfer`                               | `scheme` (`"SEPA"`, …), `end_to_end_id` (ISO 20022), `creditor_reference` (ISO 11649 RF), `amount`, `currency` |
-| `card`                                        | `processor`, `payment_id`, `amount_minor`, `currency`, `livemode`                                              |
-| `onchain`                                     | `chain`, `asset`, `amount`, `tx_hash`, `to_address`                                                            |
-| processor name (e.g. `stripe`, `nowpayments`) | the processor's own ids, as recorded from its signed webhook                                                   |
+| `rail`                                        | Members                                                                                                                                                                                                     |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bank_transfer`                               | `scheme` (`"SEPA"`, …), `amount`, `currency`, `booking_date`, `end_to_end_id` (ISO 20022), `creditor_reference` (ISO 11649 RF, also printed on the invoice as BT-83), `debtor_iban_last4`, `bank_reference` |
+| `card`                                        | `processor`, `payment_id`, `amount_minor`, `currency`, `livemode`                                                                                                                                           |
+| `onchain`                                     | `chain`, `asset`, `amount`, `tx_hash`, `to_address`                                                                                                                                                         |
+| processor name (e.g. `stripe`, `nowpayments`) | the processor's own ids, as recorded from its signed webhook                                                                                                                                                |
 
 Verifiers MUST ignore members they do not understand.
 
@@ -82,8 +82,9 @@ Array of `{event, at, source}` in chronological order, e.g. `invoice.created`, `
 ### 3.5 `fiscal`
 
 `e_invoice`: `null`, or `{format, sha256, submission_id}` where `format` names the e-invoice syntax and CIUS (for
-example `"UBL-2.1/CIUS-RO-1.0.1"`), `sha256` is the hex SHA-256 of the exact XML bytes issued, and `submission_id` is
-the national platform or network id once submitted (ANAF upload index, Peppol message id).
+example `"UBL-2.1/CIUS-RO-1.0.1"` or `"UBL-2.1/PEPPOL-BIS-3.0"`), `sha256` is the hex SHA-256 of the exact XML bytes
+issued, and `submission_id` is the national platform or network id once submitted (ANAF upload index, Peppol message
+id).
 
 ## 4. Verification
 
@@ -99,12 +100,23 @@ the national platform or network id once submitted (ANAF upload index, Peppol me
 A valid signature proves the issuer made the statements, not that they are true. The evidence members let the verifier
 check the payment independently (look up the transaction hash, match the SEPA end-to-end id).
 
-## 5. Privacy
+## 5. Linking the payment to the invoice
+
+The strongest link is a reference that appears both on the invoice and in the payment. For bank transfers this is an ISO
+11649 RF creditor reference: the issuer prints it on the invoice (UBL `cac:PaymentMeans/cbc:PaymentID`, BT-83), the
+payer's bank carries it as structured remittance information, and the issuer records it in the `bank_transfer` evidence.
+For card and crypto rails the processor's payment id or the transaction hash plays the same role.
+
+## 6. Privacy
 
 A passport contains the data already printed on the invoice. Issuers SHOULD use unguessable `passport_id` values and
-SHOULD NOT include data that is not on the invoice or needed to prove payment.
+SHOULD NOT include data that is not on the invoice or needed to prove payment. Debtor account numbers are reduced to
+their last four characters.
 
-## 6. Test vectors
+## 7. Test vectors
 
 `vectors/` contains a sample input, the passport built from it, its JWS, the JWKS and the TEST-ONLY private key used to
-sign it, plus two RO e-Factura UBL invoices (VAT categories O and S) that ANAF's public validator accepts.
+sign it; two RO e-Factura invoices (VAT categories O and S) accepted by ANAF's public validator; and five Peppol BIS
+Billing 3.0 invoices (S+E mixed rates, AE reverse charge, K intra-community, G export, O outside scope). Every XML
+vector validates against the UBL 2.1 XSD and the official CEN EN 16931 schematron; the Peppol ones also against the
+OpenPeppol BIS 3.0 rules (`conformance/run.sh`).
