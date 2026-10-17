@@ -1,0 +1,25 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security/jwk/v1"
+  ],
+  "id": "did:web:issuer.example",
+  "verificationMethod": [
+    {
+      "id": "did:web:issuer.example#test-2026-10",
+      "type": "JsonWebKey",
+      "controller": "did:web:issuer.example",
+      "publicKeyJwk": {
+        "kty": "EC",
+        "crv": "P-256",
+        "x": "sGCNDLjyLHUzpyKYC6wSMf8m7xYFr3KOKinrRbilYGo",
+        "y": "yq5GTmgI_8GFAayYhf-ZzMSaEq6Ft6v2FCpLhXqbCzo",
+        "kid": "test-2026-10",
+        "alg": "ES256"
+      }
+    }
+  ],
+  "assertionMethod": [
+    "did:web:issuer.example#test-2026-10"
+  ]
+}

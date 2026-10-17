@@ -5,6 +5,7 @@
  */
 import { buildUblInvoice, type UblInvoiceInput } from "../src/ubl.ts";
 import { buildPeppolInvoice, type PeppolInvoiceInput } from "../src/peppol.ts";
+import { didWebDocument, paymentConfirmationFromPassport, signCredential } from "../src/unvtd.ts";
 import { generateSigningKey, loadSigningKey } from "../src/jws.ts";
 import { buildPassport, CIUS_RO_FORMAT, eInvoiceReference, type PassportInput, signPassport } from "../mod.ts";
 
@@ -41,4 +42,10 @@ const input = JSON.parse(await read("sample-input.json")) as PassportInput;
 input.e_invoice = await eInvoiceReference(await read("ubl-ro-S.xml"), CIUS_RO_FORMAT);
 await write("passport.json", JSON.stringify(buildPassport(input), null, 2) + "\n");
 await write("passport.jws", (await signPassport(input, key)) + "\n");
+const passport = buildPassport(input);
+const issuer = "did:web:issuer.example";
+await write("did.json", JSON.stringify(didWebDocument(issuer, [key.publicJwk]), null, 2) + "\n");
+const credential = paymentConfirmationFromPassport(passport, { issuer })!;
+await write("unvtd-payment-confirmation.json", JSON.stringify(credential, null, 2) + "\n");
+await write("unvtd-payment-confirmation.jwt", (await signCredential(credential, key)) + "\n");
 console.log("vectors written");

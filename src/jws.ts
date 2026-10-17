@@ -52,19 +52,28 @@ export async function generateSigningKey(kid: string): Promise<{ privateJwk: Jso
 }
 
 /** Compact JWS (ES256) over the canonical JSON of the payload. */
-export async function signCanonical(payload: unknown, key: SigningKey): Promise<string> {
-  const header = base64url(new TextEncoder().encode(JSON.stringify({ alg: "ES256", kid: key.kid, typ: "JWT" })));
+export function signCanonical(payload: unknown, key: SigningKey): Promise<string> {
+  return signCompact(payload, key, { kid: key.kid, typ: "JWT" });
+}
+
+/** Compact JWS (ES256) over the canonical JSON of the payload, with extra protected header fields. */
+export async function signCompact(
+  payload: unknown,
+  key: SigningKey,
+  header: { kid: string; typ?: string; cty?: string },
+): Promise<string> {
+  const protectedHeader = base64url(new TextEncoder().encode(JSON.stringify({ alg: "ES256", ...header })));
   const body = base64url(new TextEncoder().encode(canonicalJson(payload)));
   const signature = await crypto.subtle.sign(
     { name: "ECDSA", hash: "SHA-256" },
     key.privateKey,
-    new TextEncoder().encode(`${header}.${body}`),
+    new TextEncoder().encode(`${protectedHeader}.${body}`),
   );
-  return `${header}.${body}.${base64url(new Uint8Array(signature))}`;
+  return `${protectedHeader}.${body}.${base64url(new Uint8Array(signature))}`;
 }
 
 /** The protected header of a compact JWS, or null when it is not one. */
-export function jwsHeader(jws: string): { alg?: string; kid?: string; typ?: string } | null {
+export function jwsHeader(jws: string): { alg?: string; kid?: string; typ?: string; cty?: string } | null {
   const [header] = jws.split(".");
   try {
     return JSON.parse(new TextDecoder().decode(base64urlDecode(header)));

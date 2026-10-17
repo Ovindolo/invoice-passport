@@ -113,10 +113,47 @@ A passport contains the data already printed on the invoice. Issuers SHOULD use 
 SHOULD NOT include data that is not on the invoice or needed to prove payment. Debtor account numbers are reduced to
 their last four characters.
 
-## 7. Test vectors
+## 7. Relation to UN/CEFACT UNVTD
+
+UN/CEFACT's Verifiable Trade Documents project ([UNVTD](https://un.opensource.unicc.org/unece/uncefact/spec-unvtd/), in
+development; final standard expected by the end of 2026) models trade documents as W3C Verifiable Credentials issued by
+DIDs, and describes the same reconciliation step as this specification: a verifiable invoice matched to a verifiable
+payment. Invoice Passport is designed to work alongside it, not to compete with it.
+
+**Mapping.** For a paid passport, an issuer can also publish a UNVTD `PaymentConfirmation` credential
+(`paymentConfirmationFromPassport`):
+
+| UNVTD PaymentConfirmation                                | Invoice Passport                                                               |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `id`                                                     | `verify_url` (the full passport)                                               |
+| `issuer`                                                 | the issuer's `did:web` DID, whose DID document lists the same keys as the JWKS |
+| `validFrom`                                              | `payment.paid_at`                                                              |
+| `credentialSubject.invoiceNumber`                        | `invoice.number`                                                               |
+| `credentialSubject.paymentDueDate`                       | `invoice.due_date`                                                             |
+| `credentialSubject.invoicee` / `payee` / `accountHolder` | `buyer` / `seller` / `seller`                                                  |
+| `credentialSubject.monetaryAmount`                       | `invoice.total`, `invoice.currency` (USDT/USDC reported as USD)                |
+| `credentialSubject.paymentMethod`                        | a one-line summary of `payment.evidence` with its identifiers                  |
+
+The credential is secured as a VC-JOSE compact JWS: protected header
+`{"alg":"ES256","kid":"<did>#<key id>",
+"typ":"vc+jwt","cty":"vc"}`, payload the credential in canonical JSON. Verifiers
+resolve the `did:web` document and accept only keys listed under `assertionMethod`. The test vector validates against
+the UNVTD JSON Schema (`conformance/run.sh`).
+
+**What UNVTD does not cover yet.** The PaymentConfirmation schema has no structured place for settlement evidence: the
+on-chain transaction hash, the ISO 11649 creditor reference, the ISO 20022 end-to-end id, or which rail settled the
+invoice. UNVTD lists a remittance-advice schema on its roadmap. The `payment.evidence` model of section 3.3 is offered
+as input to that work.
+
+**Differences in design.** UNVTD credentials are issued by the party that performed the act (a bank confirms a payment).
+An Invoice Passport is issued by the invoicing platform or the seller and records evidence it observed from the payment
+rail, which is why each evidence item carries identifiers a verifier can check independently.
+
+## 8. Test vectors
 
 `vectors/` contains a sample input, the passport built from it, its JWS, the JWKS and the TEST-ONLY private key used to
 sign it; two RO e-Factura invoices (VAT categories O and S) accepted by ANAF's public validator; and five Peppol BIS
 Billing 3.0 invoices (S+E mixed rates, AE reverse charge, K intra-community, G export, O outside scope). Every XML
 vector validates against the UBL 2.1 XSD and the official CEN EN 16931 schematron; the Peppol ones also against the
-OpenPeppol BIS 3.0 rules (`conformance/run.sh`).
+OpenPeppol BIS 3.0 rules (`conformance/run.sh`). `unvtd-payment-confirmation.json`/`.jwt` and `did.json` are the UNVTD
+credential derived from `passport.json` and the test issuer's DID document.

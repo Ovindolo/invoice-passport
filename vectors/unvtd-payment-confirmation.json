@@ -1,0 +1,49 @@
+{
+  "@context": "https://unvtd.unece.org/payment-confirmation-context.json",
+  "type": [
+    "VerifiableCredential",
+    "PaymentConfirmation"
+  ],
+  "credentialSchema": {
+    "id": "https://unvtd.unece.org/payment-confirmation-schema.yaml",
+    "type": "JsonSchema"
+  },
+  "id": "https://issuer.example/invoice-passport?id=example-0001",
+  "issuer": "did:web:issuer.example",
+  "credentialSubject": {
+    "invoiceNumber": "INV-2026-0001",
+    "invoicee": {
+      "type": "Party",
+      "name": "Gamma SRL",
+      "postalAddress": {
+        "type": "Address",
+        "streetAddress": "Str. Lunga 3, Brasov",
+        "addressCountry": "RO"
+      }
+    },
+    "payee": {
+      "type": "Party",
+      "name": "Beta Consulting SRL",
+      "postalAddress": {
+        "type": "Address",
+        "streetAddress": "Str. Memorandumului 10, Cluj-Napoca",
+        "addressCountry": "RO"
+      }
+    },
+    "accountHolder": {
+      "type": "Party",
+      "name": "Beta Consulting SRL",
+      "postalAddress": {
+        "type": "Address",
+        "addressCountry": "RO"
+      }
+    },
+    "paymentMethod": "USDC transfer on Ethereum, tx 0x8f2a5c1e9b7d3f6a0c4e2b8d1f7a9c3e5b0d2f4a6c8e1b3d5f7a9c0e2b4d6f8a",
+    "monetaryAmount": {
+      "amount": 1016.4,
+      "currency": "EUR"
+    },
+    "paymentDueDate": "2026-10-15T00:00:00Z"
+  },
+  "validFrom": "2026-10-03T09:12:44.000Z"
+}

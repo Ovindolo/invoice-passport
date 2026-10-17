@@ -75,18 +75,23 @@ async function generateSigningKey(kid) {
     }
   };
 }
-async function signCanonical(payload, key) {
-  const header = base64url(new TextEncoder().encode(JSON.stringify({
-    alg: "ES256",
+function signCanonical(payload, key) {
+  return signCompact(payload, key, {
     kid: key.kid,
     typ: "JWT"
+  });
+}
+async function signCompact(payload, key, header) {
+  const protectedHeader = base64url(new TextEncoder().encode(JSON.stringify({
+    alg: "ES256",
+    ...header
   })));
   const body = base64url(new TextEncoder().encode(canonicalJson(payload)));
   const signature = await crypto.subtle.sign({
     name: "ECDSA",
     hash: "SHA-256"
-  }, key.privateKey, new TextEncoder().encode(`${header}.${body}`));
-  return `${header}.${body}.${base64url(new Uint8Array(signature))}`;
+  }, key.privateKey, new TextEncoder().encode(`${protectedHeader}.${body}`));
+  return `${protectedHeader}.${body}.${base64url(new Uint8Array(signature))}`;
 }
 function jwsHeader(jws) {
   const [header] = jws.split(".");
@@ -285,12 +290,12 @@ function countryCode(value) {
   if (/^[A-Za-z]{2}$/.test(v)) return v.toUpperCase();
   return COUNTRY_ALIASES[fold(v)] ?? null;
 }
-function countyFor(party) {
-  if (party.county && /^RO-[A-Z]{1,2}$/.test(party.county)) return party.county;
-  return party.city ? CITY_COUNTY[fold(party.city)] ?? null : null;
+function countyFor(party2) {
+  if (party2.county && /^RO-[A-Z]{1,2}$/.test(party2.county)) return party2.county;
+  return party2.city ? CITY_COUNTY[fold(party2.city)] ?? null : null;
 }
-function bucharestSector(party) {
-  const m = `${party.city ?? ""} ${party.street ?? ""}`.match(/sector(?:ul)?\s*([1-6])/i);
+function bucharestSector(party2) {
+  const m = `${party2.city ?? ""} ${party2.street ?? ""}`.match(/sector(?:ul)?\s*([1-6])/i);
   return m ? `SECTOR${m[1]}` : null;
 }
 function isVatRegistered(taxId) {
@@ -996,7 +1001,7 @@ var amountOf = (n) => {
     currency: currency.toUpperCase()
   } : null;
 };
-var partyName = (party) => textAt(party, "Nm") ?? textAt(party, "Pty", "Nm");
+var partyName = (party2) => textAt(party2, "Nm") ?? textAt(party2, "Pty", "Nm");
 var nullIfNotProvided = (v) => v && v.toUpperCase() !== "NOTPROVIDED" ? v : null;
 function parseCamt(xml) {
   const doc = parseXml(xml);
@@ -1303,6 +1308,185 @@ function onchainEvidence(t, recordedAt, method) {
     recorded_at: recordedAt
   };
 }
+
+// src/unvtd.ts
+var UNVTD_PAYMENT_CONTEXT = "https://unvtd.unece.org/payment-confirmation-context.json";
+var UNVTD_PAYMENT_SCHEMA = "https://unvtd.unece.org/payment-confirmation-schema.yaml";
+var obj = (v) => v && typeof v === "object" && !Array.isArray(v) ? v : {};
+var str = (v) => typeof v === "string" && v.trim() ? v.trim() : null;
+var num = (v) => typeof v === "number" && Number.isFinite(v) ? v : null;
+function iso4217(currency) {
+  const c = (currency ?? "").toUpperCase();
+  if (c === "USDT" || c === "USDC") return "USD";
+  return /^[A-Z]{3}$/.test(c) ? c : null;
+}
+function party(p, withStreet) {
+  const address = {
+    type: "Address"
+  };
+  if (withStreet && str(p.address)) address.streetAddress = str(p.address);
+  if (str(p.country)) address.addressCountry = str(p.country);
+  const out = {
+    type: "Party",
+    name: str(p.name) ?? ""
+  };
+  if (Object.keys(address).length > 1) out.postalAddress = address;
+  return out;
+}
+var CHAIN_LABELS = {
+  base: "Base",
+  ethereum: "Ethereum",
+  bsc: "BNB Chain"
+};
+function describePayment(passport) {
+  const payment = obj(passport.payment);
+  const evidence = Array.isArray(payment.evidence) ? payment.evidence.map(obj) : [];
+  const parts = evidence.map((e) => {
+    const rail = str(e.rail);
+    if (rail === "onchain") {
+      const chain = str(e.chain);
+      const name = chain ? CHAIN_LABELS[chain] ?? chain : "chain";
+      return `${str(e.asset) ?? "Stablecoin"} transfer on ${name}, tx ${str(e.tx_hash) ?? "?"}`;
+    }
+    if (rail === "bank_transfer") {
+      const ref = str(e.creditor_reference) ?? str(e.end_to_end_id) ?? str(e.bank_reference);
+      return `${str(e.scheme) === "SEPA" ? "SEPA credit transfer" : "Bank transfer"}${ref ? `, reference ${ref}` : ""}`;
+    }
+    if (rail === "nowpayments") {
+      return `Crypto payment (${str(e.asset) ?? "crypto"}) via NOWPayments${str(e.tx_hash) ? `, tx ${str(e.tx_hash)}` : ""}`;
+    }
+    if (rail === "stripe") {
+      return `Card payment via Stripe, ${str(e.payment_intent) ?? str(e.checkout_session_id) ?? ""}`.trim();
+    }
+    return rail ?? "payment";
+  });
+  return parts.length ? parts.join("; ") : str(payment.method) ?? "Payment";
+}
+function paymentConfirmationFromPassport(passport, options) {
+  const payment = obj(passport.payment);
+  const invoice = obj(passport.invoice);
+  const seller = obj(passport.seller);
+  const buyer = obj(passport.buyer);
+  const currency = iso4217(str(invoice.currency));
+  const amount = num(invoice.total);
+  if (str(payment.status) !== "paid" || !currency || amount === null || !str(invoice.number)) return null;
+  const paidAt = str(payment.paid_at);
+  const due = str(invoice.due_date);
+  const subject = {
+    invoiceNumber: str(invoice.number),
+    invoicee: party(buyer, true),
+    payee: party(seller, true),
+    accountHolder: party(seller, false),
+    paymentMethod: describePayment(passport),
+    monetaryAmount: {
+      amount,
+      currency
+    }
+  };
+  if (due) subject.paymentDueDate = /T/.test(due) ? due : `${due}T00:00:00Z`;
+  const vc = {
+    "@context": UNVTD_PAYMENT_CONTEXT,
+    type: [
+      "VerifiableCredential",
+      "PaymentConfirmation"
+    ],
+    credentialSchema: {
+      id: UNVTD_PAYMENT_SCHEMA,
+      type: "JsonSchema"
+    },
+    id: options.id ?? str(passport.verify_url) ?? `urn:invoice-passport:${str(passport.passport_id)}`,
+    issuer: options.issuer,
+    credentialSubject: subject
+  };
+  if (paidAt) vc.validFrom = new Date(paidAt).toISOString();
+  if (options.validTo) vc.validTo = options.validTo;
+  return vc;
+}
+function signCredential(vc, key) {
+  const issuer = str(vc.issuer);
+  if (!issuer) throw new Error("credential has no issuer");
+  return signCompact(vc, key, {
+    kid: `${issuer}#${key.kid}`,
+    typ: "vc+jwt",
+    cty: "vc"
+  });
+}
+function didWebDocument(did, keys) {
+  const methods = keys.map((k) => ({
+    id: `${did}#${k.kid}`,
+    type: "JsonWebKey",
+    controller: did,
+    publicKeyJwk: {
+      kty: k.kty,
+      crv: k.crv,
+      x: k.x,
+      y: k.y,
+      kid: k.kid,
+      alg: k.alg
+    }
+  }));
+  return {
+    "@context": [
+      "https://www.w3.org/ns/did/v1",
+      "https://w3id.org/security/jwk/v1"
+    ],
+    id: did,
+    verificationMethod: methods,
+    assertionMethod: methods.map((m) => m.id)
+  };
+}
+function didWebUrl(did) {
+  const m = did.match(/^did:web:([^#?]+)$/);
+  if (!m) throw new Error(`not a did:web identifier: ${did}`);
+  const [host, ...path] = m[1].split(":").map(decodeURIComponent);
+  if (!host || /[/\s]/.test(host)) throw new Error(`invalid did:web host in ${did}`);
+  return path.length ? `https://${host}/${path.join("/")}/did.json` : `https://${host}/.well-known/did.json`;
+}
+async function resolveDidWeb(did, fetcher = fetch) {
+  const res = await fetcher(didWebUrl(did), {
+    headers: {
+      Accept: "application/did+json, application/json"
+    }
+  });
+  if (!res.ok) throw new Error(`could not resolve ${did}: HTTP ${res.status}`);
+  const doc = await res.json();
+  if (doc.id !== did) throw new Error(`DID document id ${doc.id} does not match ${did}`);
+  return doc;
+}
+async function verifyCredential(jws, didDocument) {
+  const header = jwsHeader(jws);
+  if (!header || header.alg !== "ES256" || header.typ !== "vc+jwt" || !header.kid) {
+    return {
+      ok: false,
+      reason: "not_vc_jwt"
+    };
+  }
+  const kid = header.kid;
+  if (!kid.startsWith(`${didDocument.id}#`)) return {
+    ok: false,
+    reason: "issuer_mismatch"
+  };
+  const method = didDocument.verificationMethod.find((m) => m.id === kid);
+  if (!method || !didDocument.assertionMethod.includes(kid)) return {
+    ok: false,
+    reason: "unknown_key"
+  };
+  const credential = await verifyJws(jws, method.publicKeyJwk);
+  if (!credential) return {
+    ok: false,
+    reason: "bad_signature"
+  };
+  if (credential.issuer !== didDocument.id) return {
+    ok: false,
+    reason: "issuer_mismatch"
+  };
+  return {
+    ok: true,
+    credential,
+    issuer: didDocument.id,
+    kid
+  };
+}
 export {
   CHAIN_NAMES,
   CIUS_RO,
@@ -1313,6 +1497,8 @@ export {
   PEPPOL_BIS_3,
   STABLECOINS,
   TRANSFER_TOPIC,
+  UNVTD_PAYMENT_CONTEXT,
+  UNVTD_PAYMENT_SCHEMA,
   USD_CURRENCIES,
   addressTopic,
   bankTransferEvidence,
@@ -1328,6 +1514,9 @@ export {
   countyFor,
   creditorReference,
   decodeTransfer,
+  describePayment,
+  didWebDocument,
+  didWebUrl,
   eInvoiceReference,
   evidenceForMatch,
   fetchYear,
@@ -1348,10 +1537,14 @@ export {
   parseChain,
   parseXml,
   passportDigest,
+  paymentConfirmationFromPassport,
   rateBefore,
   reconcile,
+  resolveDidWeb,
   sha256Hex,
   signCanonical,
+  signCompact,
+  signCredential,
   signPassport,
   textAt,
   transactionReference,
@@ -1359,6 +1552,7 @@ export {
   uniquePayAmount,
   uniquePayMicros,
   validCui,
+  verifyCredential,
   verifyJws,
   verifyPassport,
   verifyWithJwks

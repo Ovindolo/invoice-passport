@@ -7,6 +7,10 @@ ISO 20022, cards, blockchains). An **Invoice Passport** is a signed JSON record 
 together: the invoice, the parties, the payment evidence on whichever rail the money moved, and the invoice history.
 Anyone with the issuer's public keys can verify it. See [SPEC.md](SPEC.md).
 
+It interoperates with UN/CEFACT's
+[Verifiable Trade Documents](https://un.opensource.unicc.org/unece/uncefact/spec-unvtd/) (UNVTD): a paid passport can
+also be issued as a UNVTD `PaymentConfirmation` verifiable credential (SPEC section 7).
+
 The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 20+, browsers and edge runtimes.
 
 ## What is included
@@ -19,6 +23,7 @@ The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 
 | `src/sepa.ts`      | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                                   |
 | `src/camt.ts`      | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                             |
 | `src/reconcile.ts` | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                         |
+| `src/unvtd.ts`     | UN/CEFACT UNVTD PaymentConfirmation credentials (W3C VC, vc+jwt) and did:web resolution                     |
 | `src/onchain.ts`   | Direct USDC/USDT payments on Base, Ethereum, BNB Chain: unique pay amounts, Transfer log decoding, matching |
 | `src/xml.ts`       | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                          |
 | `src/peppol.ts`    | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931): VAT categories S, Z, E, AE, K, G, O                  |

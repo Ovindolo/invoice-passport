@@ -189,10 +189,12 @@
         class="lead">Checks an issuer's signature on an Invoice Passport and shows what it states about the invoice and its
     payment. Everything runs in your browser; nothing is uploaded.</p>
 
-      <label for="jws">Passport <span class="hint">— compact JWS, or an https URL that returns one</span></label>
+      <label
+        for="jws">Passport or credential <span class="hint">— compact JWS (passport or UNVTD vc+jwt), or an https URL that returns one</span></label>
       <textarea id="jws" spellcheck="false" placeholder="eyJhbGciOiJFUzI1NiIs…"></textarea>
 
-      <label for="jwks">Issuer keys <span class="hint">— JWKS URL or JSON</span></label>
+      <label
+        for="jwks">Issuer keys <span class="hint">— JWKS or DID document (URL or JSON); leave empty for a did:web credential to resolve it</span></label>
       <textarea id="jwks" spellcheck="false" placeholder="https://issuer.example/.well-known/jwks.json"></textarea>
 
       <label
@@ -210,7 +212,7 @@
     · <a href="https://github.com/Ovindolo/invoice-passport/blob/main/SPEC.md">specification</a></footer>
     </main>
     <script type="module">
-    import { sha256Hex, verifyPassport } from "./invoice-passport.js";
+    import { jwsHeader, resolveDidWeb, sha256Hex, verifyCredential, verifyPassport } from "./invoice-passport.js";
 
     const $ = (id) => document.getElementById(id);
     const esc = (v) =>
@@ -299,11 +301,50 @@
       return html;
     }
 
+    function renderCredential(result) {
+      if (!result.ok) {
+        const why = {
+          issuer_mismatch: "The credential was not signed by the issuer it names.",
+          unknown_key: "The signing key is not an assertion key in the issuer's DID document.",
+          bad_signature: "The signature does not match, or the credential was changed after signing.",
+        }[result.reason] ?? "Not a vc+jwt credential.";
+        return `<div class="banner bad">Not valid<small>${why}</small></div>`;
+      }
+      const c = result.credential, s = c.credentialSubject ?? {};
+      return `<div class="banner ok">Valid UNVTD credential<small>${esc((c.type ?? []).join(", "))} issued by
+        <code>${esc(result.issuer)}</code>, key <code>${esc(result.kid)}</code></small></div>
+        <h2>Payment confirmation</h2><div class="card">${
+        rows([
+          ["Invoice", esc(s.invoiceNumber)],
+          ["Amount", money(s.monetaryAmount?.amount, s.monetaryAmount?.currency)],
+          ["Payee", esc(s.payee?.name)],
+          ["Invoicee", esc(s.invoicee?.name)],
+          ["Payment method", esc(s.paymentMethod)],
+          ["Valid from", esc(c.validFrom)],
+          ["Full passport", c.id && isUrl(c.id) ? `<a href="${esc(c.id)}">${esc(c.id)}</a>` : esc(c.id)],
+        ])
+      }</div><details><summary>Raw credential JSON</summary><pre>${esc(JSON.stringify(c, null, 2))}</pre></details>`;
+    }
+
+    async function verifyVc(jws, keysText) {
+      let doc = keysText ? JSON.parse(keysText) : null;
+      if (!doc) {
+        const payload = JSON.parse(atob(jws.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+        doc = await resolveDidWeb(String(payload.issuer ?? ""));
+      }
+      return verifyCredential(jws, doc);
+    }
+
     $("verify").addEventListener("click", async () => {
       const out = $("out");
       out.innerHTML = "";
       try {
         const jws = await load($("jws").value);
+        if (jwsHeader(jws)?.typ === "vc+jwt") {
+          const keysText = $("jwks").value.trim() ? await load($("jwks").value) : "";
+          out.innerHTML = renderCredential(await verifyVc(jws, keysText));
+          return;
+        }
         const jwks = JSON.parse(await load($("jwks").value));
         const result = await verifyPassport(jws, jwks);
         let xmlCheck = null;
