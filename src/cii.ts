@@ -29,7 +29,9 @@ export type CiiInvoiceInput = Omit<PeppolInvoiceInput, "seller" | "buyer" | "lin
  * (PMT), late-payment penalties (PMD) and the discount terms (AAB). Defaults to the legal minimums;
  * pass your own wording when your terms differ.
  */
-export function frenchMandatoryNotes(over: { pmt?: string; pmd?: string; aab?: string } = {}) {
+export function frenchMandatoryNotes(
+  over: { pmt?: string; pmd?: string; aab?: string } = {},
+): { subjectCode: string; text: string }[] {
   return [
     {
       subjectCode: "PMT",
@@ -41,7 +43,10 @@ export function frenchMandatoryNotes(over: { pmt?: string; pmd?: string; aab?: s
 }
 
 /** French electronic address (EAS 0225) from a SIREN, used by the e-invoicing directory. */
-export const frenchEndpoint = (siren: string) => ({ scheme: "0225", id: siren.replace(/\s/g, "") });
+export const frenchEndpoint = (siren: string): { scheme: string; id: string } => ({
+  scheme: "0225",
+  id: siren.replace(/\s/g, ""),
+});
 
 export interface CiiResult {
   xml: string | null;

@@ -4,7 +4,7 @@
  * and a document id. The caller must embed every font it draws with (PDF/A forbids the unembedded
  * standard 14 fonts). Checked with veraPDF and the Mustang validator (see conformance/).
  */
-import { PDFDocument, PDFHexString, PDFName, PDFString } from "pdf-lib";
+import { type PDFDocument, PDFHexString, PDFName, PDFString } from "pdf-lib";
 
 export const FACTURX_FILENAME = "factur-x.xml";
 
