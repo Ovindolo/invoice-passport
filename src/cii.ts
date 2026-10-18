@@ -148,6 +148,10 @@ export function buildCiiInvoice(input: CiiInvoiceInput): CiiResult {
     problems.push(`Currency ${currency} is not an ISO 4217 code; stablecoin invoices must be issued in EUR, USD, …`);
   }
   if (!input.number?.trim()) problems.push("Invoice number is missing.");
+  const credit = input.documentType === "credit-note";
+  if (credit && !input.precedingInvoice?.number?.trim()) {
+    problems.push("A credit note must name the invoice it credits.");
+  }
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.issueDate)) problems.push("Issue date must be YYYY-MM-DD.");
   if (input.dueDate && !/^\d{4}-\d{2}-\d{2}$/.test(input.dueDate)) problems.push("Due date must be YYYY-MM-DD.");
   checkParty("Seller", input.seller, problems);
@@ -232,7 +236,7 @@ export function buildCiiInvoice(input: CiiInvoiceInput): CiiResult {
   </rsm:ExchangedDocumentContext>
   <rsm:ExchangedDocument>
     <ram:ID>${esc(input.number)}</ram:ID>
-    <ram:TypeCode>380</ram:TypeCode>
+    <ram:TypeCode>${credit ? 381 : 380}</ram:TypeCode>
     <ram:IssueDateTime>
       ${date102(input.issueDate)}
     </ram:IssueDateTime>${
@@ -379,7 +383,21 @@ export function buildCiiInvoice(input: CiiInvoiceInput): CiiResult {
   }
         <ram:GrandTotalAmount>${money(gross)}</ram:GrandTotalAmount>
         <ram:DuePayableAmount>${money(gross)}</ram:DuePayableAmount>
-      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>
+      </ram:SpecifiedTradeSettlementHeaderMonetarySummation>${
+    input.precedingInvoice?.number
+      ? `
+      <ram:InvoiceReferencedDocument>
+        <ram:IssuerAssignedID>${esc(input.precedingInvoice.number)}</ram:IssuerAssignedID>${
+        input.precedingInvoice.issueDate
+          ? `
+        <ram:FormattedIssueDateTime>
+          <qdt:DateTimeString format="102">${input.precedingInvoice.issueDate.replace(/-/g, "")}</qdt:DateTimeString>
+        </ram:FormattedIssueDateTime>`
+          : ""
+      }
+      </ram:InvoiceReferencedDocument>`
+      : ""
+  }
     </ram:ApplicableHeaderTradeSettlement>
   </rsm:SupplyChainTradeTransaction>
 </rsm:CrossIndustryInvoice>

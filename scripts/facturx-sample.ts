@@ -87,3 +87,28 @@ const bytes2 = await saveAsFacturX(doc2, receiptCii.xml, {
 });
 await Deno.writeFile(new URL("vectors/facturx-agent-receipt-AE.pdf", root), bytes2);
 console.log(`facturx-agent-receipt-AE.pdf ${bytes2.length} bytes`);
+
+// Credit note (type 381) for the French invoice, as Factur-X.
+const credit = JSON.parse(
+  await Deno.readTextFile(new URL("vectors/cii-credit-note-fr.input.json", root)),
+) as CiiInvoiceInput;
+const creditCii = buildCiiInvoice(credit);
+if (!creditCii.xml) throw new Error(creditCii.problems.join("; "));
+const doc3 = await PDFDocument.create();
+doc3.registerFontkit(fontkit);
+const f3 = await doc3.embedFont(await Deno.readFile(new URL("conformance/.cache/fonts/DejaVuSans.ttf", root)), {
+  subset: true,
+});
+doc3.addPage([595.28, 841.89]).drawText(`Avoir ${credit.number} (facture ${credit.precedingInvoice?.number})`, {
+  x: 50,
+  y: 790,
+  size: 12,
+  font: f3,
+});
+const bytes3 = await saveAsFacturX(doc3, creditCii.xml, {
+  title: `Avoir ${credit.number}`,
+  author: credit.seller.name,
+  date: new Date("2026-10-20T10:00:00Z"),
+});
+await Deno.writeFile(new URL("vectors/facturx-credit-note-fr.pdf", root), bytes3);
+console.log(`facturx-credit-note-fr.pdf ${bytes3.length} bytes`);

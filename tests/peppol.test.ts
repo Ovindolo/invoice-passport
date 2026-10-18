@@ -104,3 +104,15 @@ Deno.test("XRechnung profile: KoSIT identifier, BR-DE checks, vectors reproduced
     "peppol keeps its own DE rule",
   );
 });
+
+Deno.test("credit notes are UBL CreditNote 381 with the credited invoice, and need it", async () => {
+  const input = JSON.parse(
+    await Deno.readTextFile(new URL("../vectors/peppol-credit-note-S-E.input.json", import.meta.url)),
+  ) as PeppolInvoiceInput;
+  const r = buildPeppolInvoice(input);
+  assert(!!r.xml && r.xml.includes("<CreditNote ") && r.xml.includes("<cbc:CreditNoteTypeCode>381"), "root");
+  assert(r.xml!.includes("<cac:CreditNoteLine>") && r.xml!.includes("<cbc:CreditedQuantity"), "lines");
+  assert(r.xml!.includes("<cbc:ID>2026-100</cbc:ID>") && !r.xml!.includes("<cbc:DueDate>"), "billing reference");
+  const missing = buildPeppolInvoice({ ...input, precedingInvoice: null });
+  assert(missing.problems.some((p) => p.includes("credits")), missing.problems.join("|"));
+});

@@ -100,6 +100,10 @@ export interface PeppolLine {
 }
 
 export interface PeppolInvoiceInput {
+  /** "credit-note" emits a UBL CreditNote (type 381) that cancels or corrects an earlier invoice */
+  documentType?: "invoice" | "credit-note";
+  /** the invoice this document corrects or credits (BT-25 / BT-26); expected on credit notes */
+  precedingInvoice?: { number: string; issueDate?: string | null } | null;
   number: string;
   /** YYYY-MM-DD */
   issueDate: string;
@@ -262,6 +266,13 @@ export function buildPeppolInvoice(input: PeppolInvoiceInput, profile: InvoicePr
   }
   if (!input.number?.trim()) problems.push("Invoice number is missing.");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input.issueDate)) problems.push("Issue date must be YYYY-MM-DD.");
+  const credit = input.documentType === "credit-note";
+  if (credit && !input.precedingInvoice?.number?.trim()) {
+    problems.push("A credit note must name the invoice it credits.");
+  }
+  if (input.precedingInvoice?.issueDate && !/^\d{4}-\d{2}-\d{2}$/.test(input.precedingInvoice.issueDate)) {
+    problems.push("The credited invoice date must be YYYY-MM-DD.");
+  }
   if (!input.buyerReference?.trim() && !input.orderReference?.trim()) {
     problems.push("A buyer reference or purchase order reference is required by Peppol.");
   }
@@ -373,13 +384,19 @@ ${indent}</cac:TaxScheme>`;
   };
 
   const p = input.payment;
+  const root = credit ? "CreditNote" : "Invoice";
+  const lineTag = credit ? "CreditNoteLine" : "InvoiceLine";
+  const qtyTag = credit ? "CreditedQuantity" : "InvoicedQuantity";
+  const pre = input.precedingInvoice;
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+<${root} xmlns="urn:oasis:names:specification:ubl:schema:xsd:${root}-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
   <cbc:CustomizationID>${profile === "xrechnung" ? XRECHNUNG_3 : PEPPOL_BIS_3}</cbc:CustomizationID>
   <cbc:ProfileID>${PEPPOL_BILLING_PROCESS}</cbc:ProfileID>
   <cbc:ID>${esc(input.number)}</cbc:ID>
-  <cbc:IssueDate>${input.issueDate}</cbc:IssueDate>${el("  ", "cbc:DueDate", input.dueDate)}
-  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>${el("  ", "cbc:Note", input.note)}
+  <cbc:IssueDate>${input.issueDate}</cbc:IssueDate>${credit ? "" : el("  ", "cbc:DueDate", input.dueDate)}
+  <cbc:${credit ? "CreditNoteTypeCode" : "InvoiceTypeCode"}>${credit ? 381 : 380}</cbc:${
+    credit ? "CreditNoteTypeCode" : "InvoiceTypeCode"
+  }>${el("  ", "cbc:Note", input.note)}
   <cbc:DocumentCurrencyCode>${currency}</cbc:DocumentCurrencyCode>${
     el("  ", "cbc:TaxCurrencyCode", input.taxCurrency?.code)
   }${el("  ", "cbc:BuyerReference", input.buyerReference)}${
@@ -388,6 +405,15 @@ ${indent}</cac:TaxScheme>`;
   <cac:OrderReference>
     <cbc:ID>${esc(input.orderReference)}</cbc:ID>
   </cac:OrderReference>`
+      : ""
+  }${
+    pre?.number
+      ? `
+  <cac:BillingReference>
+    <cac:InvoiceDocumentReference>
+      <cbc:ID>${esc(pre.number)}</cbc:ID>${el("      ", "cbc:IssueDate", pre.issueDate)}
+    </cac:InvoiceDocumentReference>
+  </cac:BillingReference>`
       : ""
   }${ublAttachments(input.attachments)}${partyXml("AccountingSupplierParty", input.seller)}${
     partyXml("AccountingCustomerParty", input.buyer)
@@ -413,8 +439,8 @@ ${indent}</cac:TaxScheme>`;
       ? `
   <cac:PaymentMeans>
     <cbc:PaymentMeansCode name="SEPA credit transfer">58</cbc:PaymentMeansCode>${
-        el("    ", "cbc:PaymentID", p.reference?.replace(/\s/g, ""))
-      }
+        credit ? el("    ", "cbc:PaymentDueDate", input.dueDate) : ""
+      }${el("    ", "cbc:PaymentID", p.reference?.replace(/\s/g, ""))}
     <cac:PayeeFinancialAccount>
       <cbc:ID>${esc(p.iban.replace(/\s/g, "").toUpperCase())}</cbc:ID>${el("      ", "cbc:Name", p.accountName)}${
         p.bic
@@ -461,9 +487,9 @@ ${taxCategoryXml("        ", g.category, g.rate, true)}
     <cbc:PayableAmount currencyID="${currency}">${money(gross)}</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>${
     lines.map((l) => `
-  <cac:InvoiceLine>
+  <cac:${lineTag}>
     <cbc:ID>${l.id}</cbc:ID>
-    <cbc:InvoicedQuantity unitCode="${esc(l.unitCode ?? "C62")}">${l.quantity}</cbc:InvoicedQuantity>
+    <cbc:${qtyTag} unitCode="${esc(l.unitCode ?? "C62")}">${l.quantity}</cbc:${qtyTag}>
     <cbc:LineExtensionAmount currencyID="${currency}">${money(l.net)}</cbc:LineExtensionAmount>
     <cac:Item>
       <cbc:Name>${esc(l.description.slice(0, 100))}</cbc:Name>
@@ -474,9 +500,9 @@ ${taxCategoryXml("        ", l.vatCategory, l.vatRate, false)}
     <cac:Price>
       <cbc:PriceAmount currencyID="${currency}">${l.unitPrice}</cbc:PriceAmount>
     </cac:Price>
-  </cac:InvoiceLine>`).join("")
+  </cac:${lineTag}>`).join("")
   }
-</Invoice>
+</${root}>
 `;
   return { xml, problems: [] };
 }

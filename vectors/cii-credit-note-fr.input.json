@@ -1,0 +1,79 @@
+{
+  "number": "AV-2026-0007",
+  "issueDate": "2026-10-20",
+  "dueDate": "2026-11-19",
+  "currency": "EUR",
+  "buyerReference": "BC-2026-118",
+  "seller": {
+    "name": "Atelier Numérique SAS",
+    "vatId": "FR32123456789",
+    "legalId": {
+      "id": "123456789",
+      "scheme": "0002"
+    },
+    "street": "12 rue de la Paix",
+    "city": "Paris",
+    "postalCode": "75002",
+    "country": "FR",
+    "contact": {
+      "name": "Claire Martin",
+      "email": "factures@atelier.example"
+    },
+    "endpoint": {
+      "scheme": "0225",
+      "id": "123456789"
+    }
+  },
+  "buyer": {
+    "name": "Client Industrie SA",
+    "vatId": "FR40303265045",
+    "legalId": {
+      "id": "303265045",
+      "scheme": "0002"
+    },
+    "street": "5 avenue Jean Jaurès",
+    "city": "Lyon",
+    "postalCode": "69007",
+    "country": "FR",
+    "endpoint": {
+      "scheme": "0225",
+      "id": "303265045"
+    }
+  },
+  "lines": [
+    {
+      "description": "Hébergement octobre",
+      "quantity": 1,
+      "unitPrice": 89.9,
+      "vatCategory": "S",
+      "vatRate": 20
+    }
+  ],
+  "payment": {
+    "iban": "FR7630006000011234567890189",
+    "reference": "RF18539007547034"
+  },
+  "paymentTerms": "Paiement à 30 jours.",
+  "notes": [
+    {
+      "subjectCode": "PMT",
+      "text": "Indemnité forfaitaire pour frais de recouvrement en cas de retard de paiement : 40 €."
+    },
+    {
+      "subjectCode": "PMD",
+      "text": "Pénalités de retard : trois fois le taux d'intérêt légal."
+    },
+    {
+      "subjectCode": "AAB",
+      "text": "Pas d'escompte pour paiement anticipé."
+    }
+  ],
+  "documentType": "credit-note",
+  "precedingInvoice": {
+    "number": "FA-2026-0042",
+    "issueDate": "2026-10-18"
+  },
+  "delivery": {
+    "date": "2026-10-15"
+  }
+}

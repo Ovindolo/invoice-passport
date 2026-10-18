@@ -57,7 +57,9 @@ for juris in ae sg; do
   fi
 done
 for f in ../vectors/ubl-*.xml ../vectors/peppol-*.xml ../vectors/xrechnung-*.xml ../vectors/pint-*.xml; do
-  xmllint --noout --schema "$CACHE/ubl/xsd/maindoc/UBL-Invoice-2.1.xsd" "$f" 2>/dev/null || { echo "XSD FAIL $f"; status=1; }
+  xsd="$CACHE/ubl/xsd/maindoc/UBL-Invoice-2.1.xsd"
+  grep -q "<CreditNote " "$f" && xsd="$CACHE/ubl/xsd/maindoc/UBL-CreditNote-2.1.xsd"
+  xmllint --noout --schema "$xsd" "$f" 2>/dev/null || { echo "XSD FAIL $f"; status=1; }
 done
 for f in ../vectors/cii-*.xml; do
   xmllint --noout --schema "$CII_XSD" "$f" 2>/dev/null || { echo "XSD FAIL $f"; status=1; }
