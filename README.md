@@ -129,18 +129,26 @@ deno task verify passport.jws --jwks https://issuer.example/.well-known/jwks.jso
 `examples/robinhood-usdg-pay-invoice.ts` sends the exact amount shown on an invoice in USDG on Robinhood Chain (chain
 id 4663) with your own key, read from the environment for that run only.
 
-## Private requests over Anyone (optional)
+## Private agent payments over Anyone (optional)
 
-Agents and auditors can fetch passports, keys and invoices without revealing their IP address, through a local
-[Anyone](https://anyone.io) client (SOCKS5h on port 9050, DNS resolved by the network):
+Agents and auditors can read invoices, pay them and verify the proof without revealing their IP address, through a local
+[Anyone](https://anyone.io) client (SOCKS5h on port 9050, DNS resolved by the network). Tested on the live network: a
+Billify Invoice Passport fetched and verified in about 1.4 s, the payment MCP in under 1 s.
 
 ```sh
-npx @anyone-protocol/anyone-client          # starts the client
-deno run --allow-read --allow-net cli/verify.ts <passport-url> --jwks <jwks-url> --anyone
+npx @anyone-protocol/anyone-client                       # starts the client
+deno run --allow-net --allow-env examples/agent-pay-over-anyone.ts --token <public invoice token>
 ```
 
-In code, `anyoneFetch()` returns a `fetch` that goes through the client, and `anyoneReachable()` tells whether one is
-running. Billify itself does not need it; it is the caller's choice.
+[`examples/agent-pay-over-anyone.ts`](examples/agent-pay-over-anyone.ts) reads the invoice's MPP challenge, pays the
+exact USDC amount on Base (RPC traffic also through Anyone, only with `PAYER_PRIVATE_KEY`), presents the transaction as
+an MPP `hash` credential, and verifies the signed Invoice Passport. Payment over x402 or MPP needs no API key or
+account, so nothing ties the agent to a login either.
+
+In code: `anyoneFetch()` returns a `fetch` that goes through the client, `anyoneHttpClient()` plugs into libraries that
+take fetch options (e.g. viem), `anyoneReachable()` tells whether a client is running, and the verifier CLI has
+`--anyone`. This hides the network origin, not the payment: the paying wallet is public on chain, and B2B invoices still
+name the buyer.
 
 ## Browser verifier
 

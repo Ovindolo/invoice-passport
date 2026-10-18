@@ -119,6 +119,25 @@ export function formatMppChallenge(c: MppChallenge): string {
   return "Payment " + params.filter(([, v]) => v !== undefined).map(([k, v]) => `${k}=${quote(v!)}`).join(", ");
 }
 
+/** Client side: the Payment challenges in a WWW-Authenticate value (other schemes are skipped). */
+export function parseMppChallenges(value: string | null | undefined): MppChallenge[] {
+  const out: MppChallenge[] = [];
+  const re = /Payment\s+((?:[A-Za-z]+="(?:[^"\\]|\\.)*"\s*,?\s*)+)/g;
+  for (const m of (value ?? "").matchAll(re)) {
+    const params: Record<string, string> = {};
+    for (const p of m[1].matchAll(/([A-Za-z]+)="((?:[^"\\]|\\.)*)"/g)) params[p[1]] = p[2].replace(/\\(.)/g, "$1");
+    if (params.id && params.realm && params.method && params.intent && params.request) {
+      out.push(params as unknown as MppChallenge);
+    }
+  }
+  return out;
+}
+
+/** Client side: the Authorization value for a challenge and a method-specific payload. */
+export function mppCredential(challenge: MppChallenge, payload: Record<string, unknown>, source?: string): string {
+  return `Payment ${base64url(JSON.stringify({ challenge, payload, ...(source ? { source } : {}) }))}`;
+}
+
 /** Decodes "Payment <base64url JSON>"; null when the value is not a Payment credential. */
 export function parseMppCredential(value: string | null | undefined): MppCredential | null {
   const m = (value ?? "").trim().match(/^Payment\s+([A-Za-z0-9_-]+)$/);

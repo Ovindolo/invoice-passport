@@ -6,7 +6,9 @@ import {
   formatMppChallenge,
   fromBase64url,
   mppChallengeId,
+  mppCredential,
   mppReceipt,
+  parseMppChallenges,
   parseMppCredential,
   verifyMppChallenge,
 } from "../src/mpp.ts";
@@ -87,4 +89,21 @@ Deno.test("findChargeTransfer matches token, recipient and exact amount", () => 
     ),
   );
   assert(receipt.status === "success" && receipt.method === "evm");
+});
+
+Deno.test("client side: challenges parse back from WWW-Authenticate and credentials verify", async () => {
+  const c = await createMppChallenge("k", {
+    realm: "billify.org",
+    method: "evm",
+    intent: "charge",
+    request: { amount: "1" },
+    description: 'Invoice "A, B"',
+    expires: "2030-01-01T00:00:00Z",
+  });
+  const header = `Bearer realm="x", ${formatMppChallenge(c)}`;
+  const [parsed] = parseMppChallenges(header);
+  assert(parsed.id === c.id && parsed.description === 'Invoice "A, B"', JSON.stringify(parsed));
+  const cred = parseMppCredential(mppCredential(parsed, { type: "hash", hash: "0x1" }, "did:pkh:eip155:8453:0xabc"))!;
+  assert(cred.source === "did:pkh:eip155:8453:0xabc");
+  assert(await verifyMppChallenge("k", cred.challenge) === null);
 });

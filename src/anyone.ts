@@ -8,10 +8,15 @@
 
 export const ANYONE_SOCKS_URL = "socks5h://127.0.0.1:9050";
 
+/** A Deno HTTP client bound to the Anyone SOCKS proxy, e.g. for viem: http(url, { fetchOptions: { client } }). */
+export function anyoneHttpClient(proxyUrl: string = ANYONE_SOCKS_URL): Deno.HttpClient {
+  if (!/^socks5h?:\/\//.test(proxyUrl)) throw new Error(`Not a SOCKS5 URL: ${proxyUrl}`);
+  return Deno.createHttpClient({ proxy: { url: proxyUrl } });
+}
+
 /** A fetch that sends every request through the SOCKS5 proxy of a local Anyone client. */
 export function anyoneFetch(proxyUrl: string = ANYONE_SOCKS_URL): typeof fetch {
-  if (!/^socks5h?:\/\//.test(proxyUrl)) throw new Error(`Not a SOCKS5 URL: ${proxyUrl}`);
-  const client = Deno.createHttpClient({ proxy: { url: proxyUrl } });
+  const client = anyoneHttpClient(proxyUrl);
   return ((input: RequestInfo | URL, init?: RequestInit) => fetch(input, { ...init, client })) as typeof fetch;
 }
 
