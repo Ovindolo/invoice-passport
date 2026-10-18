@@ -14,3 +14,4 @@ export * from "./src/camt.ts";
 export * from "./src/reconcile.ts";
 export * from "./src/onchain.ts";
 export * from "./src/unvtd.ts";
+export * from "./src/ecb.ts";

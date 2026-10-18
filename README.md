@@ -28,6 +28,7 @@ The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 
 | `src/xml.ts`       | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                                                                |
 | `src/peppol.ts`    | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931): VAT categories S, Z, E, AE, K, G, O                                                        |
 | `src/ubl.ts`       | UBL 2.1 invoice for RO e-Factura (CIUS-RO 1.0.1), VAT categories S and O, with CUI checks                                                         |
+| `src/ecb.ts`       | ECB euro reference rates (≈30 currencies), on-or-before lookups and cross rates                                                                   |
 | `src/bnr.ts`       | National Bank of Romania reference rates, and the "last fixing before the operation date" rule                                                    |
 | `cli/verify.ts`    | Command-line verifier                                                                                                                             |
 | `web/`             | Browser verifier page (`web/index.html`) and the bundled library                                                                                  |

@@ -292,7 +292,10 @@ function countryCode(value) {
 }
 function countyFor(party2) {
   if (party2.county && /^RO-[A-Z]{1,2}$/.test(party2.county)) return party2.county;
-  return party2.city ? CITY_COUNTY[fold(party2.city)] ?? null : null;
+  if (!party2.city) return null;
+  const city = fold(party2.city).replace(/^(mun\.?|municipiul|oras\.?|orasul|comuna|com\.?)\s+/, "");
+  if (/\bbucuresti\b|\bbucharest\b/.test(city)) return "RO-B";
+  return CITY_COUNTY[city] ?? null;
 }
 function bucharestSector(party2) {
   const m = `${party2.city ?? ""} ${party2.street ?? ""}`.match(/sector(?:ul)?\s*([1-6])/i);
@@ -630,6 +633,42 @@ var DEFAULT_VATEX = {
   G: "VATEX-EU-G",
   O: "VATEX-EU-O"
 };
+var VAT_EAS = {
+  AT: "9914",
+  BE: "9925",
+  BG: "9926",
+  CY: "9928",
+  CZ: "9929",
+  DE: "9930",
+  EE: "9931",
+  ES: "9920",
+  FR: "9957",
+  GB: "9932",
+  GR: "9933",
+  EL: "9933",
+  HR: "9934",
+  HU: "9910",
+  IE: "9935",
+  LT: "9937",
+  LU: "9938",
+  LV: "9939",
+  MT: "9943",
+  NL: "9944",
+  PL: "9945",
+  PT: "9946",
+  RO: "9947",
+  SI: "9949",
+  SK: "9950",
+  CH: "9927"
+};
+function peppolEndpointForVat(vatId) {
+  const v = String(vatId ?? "").replace(/[\s.-]/g, "").toUpperCase();
+  const scheme = VAT_EAS[v.slice(0, 2)];
+  return scheme && /^[A-Z]{2}[0-9A-Z]{2,}$/.test(v) ? {
+    scheme,
+    id: v
+  } : null;
+}
 var esc2 = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 var round22 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 var money2 = (n) => round22(n).toFixed(2);
@@ -1498,6 +1537,63 @@ async function verifyCredential(jws, didDocument) {
     kid
   };
 }
+
+// src/ecb.ts
+var ECB_API = "https://data-api.ecb.europa.eu/service/data/EXR";
+function parseEcbCsv(csv) {
+  const [head, ...lines] = csv.trim().split(/\r?\n/);
+  const cols = head.split(",");
+  const iCur = cols.indexOf("CURRENCY"), iDate = cols.indexOf("TIME_PERIOD"), iVal = cols.indexOf("OBS_VALUE");
+  const table = /* @__PURE__ */ new Map();
+  for (const line of lines) {
+    const cells = line.split(",");
+    const value = Number(cells[iVal]);
+    if (!cells[iCur] || !cells[iDate] || !Number.isFinite(value) || value <= 0) continue;
+    const series = table.get(cells[iCur]) ?? /* @__PURE__ */ new Map();
+    series.set(cells[iDate], value);
+    table.set(cells[iCur], series);
+  }
+  return table;
+}
+async function fetchEcb(currencies, start, end, fetcher = fetch) {
+  const list = [
+    ...new Set(currencies.map((c) => c.toUpperCase()).filter((c) => c !== "EUR"))
+  ];
+  if (list.length === 0) return /* @__PURE__ */ new Map();
+  const url = `${ECB_API}/D.${list.join("+")}.EUR.SP00.A?startPeriod=${start}&endPeriod=${end}&format=csvdata`;
+  const res = await fetcher(url, {
+    headers: {
+      Accept: "text/csv"
+    },
+    signal: AbortSignal.timeout(2e4)
+  });
+  if (res.status === 404) return /* @__PURE__ */ new Map();
+  if (!res.ok) throw new Error(`ECB rates unavailable: HTTP ${res.status}`);
+  return parseEcbCsv(await res.text());
+}
+function eurRateOnOrBefore(table, currency, date2) {
+  if (currency === "EUR") return {
+    rate: 1,
+    date: date2
+  };
+  let best = null;
+  for (const [d, rate] of table.get(currency) ?? []) {
+    if (d <= date2 && (!best || d > best.date)) best = {
+      rate,
+      date: d
+    };
+  }
+  return best;
+}
+function ecbCross(table, from, to, date2) {
+  const a = eurRateOnOrBefore(table, from, date2);
+  const b = eurRateOnOrBefore(table, to, date2);
+  if (!a || !b) return null;
+  return {
+    rate: b.rate / a.rate,
+    date: a.date < b.date ? a.date : b.date
+  };
+}
 export {
   CHAIN_NAMES,
   CIUS_RO,
@@ -1511,6 +1607,7 @@ export {
   UNVTD_PAYMENT_CONTEXT,
   UNVTD_PAYMENT_SCHEMA,
   USD_CURRENCIES,
+  VAT_EAS,
   addressTopic,
   bankTransferEvidence,
   bnrBasis,
@@ -1529,7 +1626,10 @@ export {
   didWebDocument,
   didWebUrl,
   eInvoiceReference,
+  ecbCross,
+  eurRateOnOrBefore,
   evidenceForMatch,
+  fetchEcb,
   fetchYear,
   findCreditorReference,
   formatCreditorReference,
@@ -1546,9 +1646,11 @@ export {
   parseBnrXml,
   parseCamt,
   parseChain,
+  parseEcbCsv,
   parseXml,
   passportDigest,
   paymentConfirmationFromPassport,
+  peppolEndpointForVat,
   rateBefore,
   reconcile,
   resolveDidWeb,
