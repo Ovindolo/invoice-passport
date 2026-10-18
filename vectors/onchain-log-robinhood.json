@@ -1,0 +1,16 @@
+{
+  "chain": "robinhood",
+  "log": {
+    "address": "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+    "topics": [
+      "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+      "0x0000000000000000000000008366a39cc670b4001a1121b8f6a443a643e40951",
+      "0x0000000000000000000000008876789976decbfcbbbe364623c63652db8c0904"
+    ],
+    "data": "0x00000000000000000000000000000000000000000000000000000000005cf860",
+    "blockNumber": "0x57474dd",
+    "transactionHash": "0xd4c42be233ad6c00ce026794b6e4844bf4ee24b7a50393622fdbd520b33b390c",
+    "logIndex": "0x2",
+    "removed": false
+  }
+}

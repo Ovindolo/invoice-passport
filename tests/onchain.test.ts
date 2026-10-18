@@ -91,3 +91,13 @@ Deno.test("matching: exact unique amount auto, plain total as suggestion, others
     "evidence",
   );
 });
+
+Deno.test("decodes a real USDG Transfer on Robinhood Chain (captured 2026-10-18)", async () => {
+  const { log } = JSON.parse(
+    await Deno.readTextFile(new URL("../vectors/onchain-log-robinhood.json", import.meta.url)),
+  );
+  const t = decodeTransfer("robinhood", log)!;
+  assert(t && t.asset === "USDG" && t.micros === t.value, "USDG has 6 decimals");
+  assert(transferAmount(t) === "6.092896", transferAmount(t));
+  assert(parseChain("Robinhood Chain (USDG)") === "robinhood" && parseChain("robinhood") === "robinhood", "label");
+});

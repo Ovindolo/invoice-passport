@@ -159,7 +159,7 @@ function partyXml(tag: string, p: PeppolParty): string {
 export function buildPeppolInvoice(input: PeppolInvoiceInput): PeppolResult {
   const problems: string[] = [];
   const currency = input.currency.trim().toUpperCase();
-  if (!/^[A-Z]{3}$/.test(currency) || currency === "USDT" || currency === "USDC") {
+  if (!/^[A-Z]{3}$/.test(currency) || currency === "USDT" || currency === "USDC" || currency === "USDG") {
     problems.push(`Currency ${currency} is not an ISO 4217 code; stablecoin invoices must be issued in EUR, USD, …`);
   }
   if (!input.number?.trim()) problems.push("Invoice number is missing.");

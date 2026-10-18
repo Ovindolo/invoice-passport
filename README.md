@@ -15,24 +15,24 @@ The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 
 
 ## What is included
 
-| Module             |                                                                                                             |
-| ------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `src/canonical.ts` | Canonical JSON and SHA-256                                                                                  |
-| `src/jws.ts`       | ES256 compact JWS: load / generate keys, sign, verify, verify against a JWKS                                |
-| `src/passport.ts`  | Build, sign and verify Invoice Passports                                                                    |
-| `src/sepa.ts`      | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                                   |
-| `src/camt.ts`      | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                             |
-| `src/reconcile.ts` | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                         |
-| `src/unvtd.ts`     | UN/CEFACT UNVTD PaymentConfirmation credentials (W3C VC, vc+jwt) and did:web resolution                     |
-| `src/onchain.ts`   | Direct USDC/USDT payments on Base, Ethereum, BNB Chain: unique pay amounts, Transfer log decoding, matching |
-| `src/xml.ts`       | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                          |
-| `src/peppol.ts`    | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931): VAT categories S, Z, E, AE, K, G, O                  |
-| `src/ubl.ts`       | UBL 2.1 invoice for RO e-Factura (CIUS-RO 1.0.1), VAT categories S and O, with CUI checks                   |
-| `src/bnr.ts`       | National Bank of Romania reference rates, and the "last fixing before the operation date" rule              |
-| `cli/verify.ts`    | Command-line verifier                                                                                       |
-| `web/`             | Browser verifier page (`web/index.html`) and the bundled library                                            |
-| `conformance/`     | Checks every XML vector against the UBL 2.1 XSD and the official CEN EN 16931 and OpenPeppol schematron     |
-| `vectors/`         | Test vectors: passport, JWS, JWKS, RO e-Factura invoices accepted by ANAF, Peppol BIS 3.0 invoices          |
+| Module             |                                                                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/canonical.ts` | Canonical JSON and SHA-256                                                                                                                        |
+| `src/jws.ts`       | ES256 compact JWS: load / generate keys, sign, verify, verify against a JWKS                                                                      |
+| `src/passport.ts`  | Build, sign and verify Invoice Passports                                                                                                          |
+| `src/sepa.ts`      | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                                                                         |
+| `src/camt.ts`      | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                                                                   |
+| `src/reconcile.ts` | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                                                               |
+| `src/unvtd.ts`     | UN/CEFACT UNVTD PaymentConfirmation credentials (W3C VC, vc+jwt) and did:web resolution                                                           |
+| `src/onchain.ts`   | Direct stablecoin payments (USDC/USDT on Base, Ethereum, BNB Chain; USDG on Robinhood Chain): unique pay amounts, Transfer log decoding, matching |
+| `src/xml.ts`       | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                                                                |
+| `src/peppol.ts`    | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931): VAT categories S, Z, E, AE, K, G, O                                                        |
+| `src/ubl.ts`       | UBL 2.1 invoice for RO e-Factura (CIUS-RO 1.0.1), VAT categories S and O, with CUI checks                                                         |
+| `src/bnr.ts`       | National Bank of Romania reference rates, and the "last fixing before the operation date" rule                                                    |
+| `cli/verify.ts`    | Command-line verifier                                                                                                                             |
+| `web/`             | Browser verifier page (`web/index.html`) and the bundled library                                                                                  |
+| `conformance/`     | Checks every XML vector against the UBL 2.1 XSD and the official CEN EN 16931 and OpenPeppol schematron                                           |
+| `vectors/`         | Test vectors: passport, JWS, JWKS, RO e-Factura invoices accepted by ANAF, Peppol BIS 3.0 invoices                                                |
 
 ## Usage
 
@@ -91,6 +91,11 @@ Verify a passport from the command line:
 deno task verify vectors/passport.jws --jwks vectors/jwks.json
 deno task verify passport.jws --jwks https://issuer.example/.well-known/jwks.json
 ```
+
+## Demo: pay an invoice in USDG on Robinhood Chain
+
+`examples/robinhood-usdg-pay-invoice.ts` sends the exact amount shown on an invoice in USDG on Robinhood Chain (chain
+id 4663) with your own key, read from the environment for that run only.
 
 ## Browser verifier
 

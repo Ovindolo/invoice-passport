@@ -26,7 +26,7 @@ const num = (v: Json | undefined): number | null => (typeof v === "number" && Nu
 /** ISO 4217 code for the amount; USD stablecoins settle 1:1 and are reported as USD. */
 function iso4217(currency: string | null): string | null {
   const c = (currency ?? "").toUpperCase();
-  if (c === "USDT" || c === "USDC") return "USD";
+  if (c === "USDT" || c === "USDC" || c === "USDG") return "USD";
   return /^[A-Z]{3}$/.test(c) ? c : null;
 }
 
@@ -39,7 +39,12 @@ function party(p: Obj, withStreet: boolean): Obj {
   return out;
 }
 
-const CHAIN_LABELS: Record<string, string> = { base: "Base", ethereum: "Ethereum", bsc: "BNB Chain" };
+const CHAIN_LABELS: Record<string, string> = {
+  base: "Base",
+  ethereum: "Ethereum",
+  bsc: "BNB Chain",
+  robinhood: "Robinhood Chain",
+};
 
 /** One-line description of how the invoice was paid, with the identifiers a verifier can check. */
 export function describePayment(passport: Passport): string {

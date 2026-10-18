@@ -8,17 +8,17 @@
  */
 import type { PaymentEvidence } from "./passport.ts";
 
-export type Chain = "base" | "ethereum" | "bsc";
+export type Chain = "base" | "ethereum" | "bsc" | "robinhood";
 
 export interface Stablecoin {
   chain: Chain;
-  asset: "USDC" | "USDT";
+  asset: "USDC" | "USDT" | "USDG";
   /** contract address, lower case */
   address: string;
   decimals: number;
 }
 
-/** Verified on-chain (symbol() and decimals()) on 2026-10-17. */
+/** Verified on-chain (symbol() and decimals()) on 2026-10-17 / 2026-10-18. */
 export const STABLECOINS: Stablecoin[] = [
   { chain: "base", asset: "USDC", address: "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913", decimals: 6 },
   { chain: "base", asset: "USDT", address: "0xfde4c96c8593536e31f229ea8f37b2ada2699bb2", decimals: 6 },
@@ -26,21 +26,29 @@ export const STABLECOINS: Stablecoin[] = [
   { chain: "ethereum", asset: "USDT", address: "0xdac17f958d2ee523a2206206994597c13d831ec7", decimals: 6 },
   { chain: "bsc", asset: "USDT", address: "0x55d398326f99059ff775485246999027b3197955", decimals: 18 },
   { chain: "bsc", asset: "USDC", address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d", decimals: 18 },
+  // Robinhood Chain (chain id 4663): Paxos Global Dollar, verified on-chain 2026-10-18.
+  { chain: "robinhood", asset: "USDG", address: "0x5fc5360d0400a0fd4f2af552add042d716f1d168", decimals: 6 },
 ];
 
-export const CHAIN_NAMES: Record<Chain, string> = { base: "Base", ethereum: "Ethereum", bsc: "BNB Chain" };
+export const CHAIN_NAMES: Record<Chain, string> = {
+  base: "Base",
+  ethereum: "Ethereum",
+  bsc: "BNB Chain",
+  robinhood: "Robinhood Chain",
+};
 
 /** keccak256("Transfer(address,address,uint256)") */
 export const TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 
 /** Invoice currencies a USD stablecoin can settle 1:1. */
-export const USD_CURRENCIES = ["USD", "USDC", "USDT"];
+export const USD_CURRENCIES = ["USD", "USDC", "USDT", "USDG"];
 
 export const isEvmAddress = (v: string | null | undefined): v is string => !!v && /^0x[0-9a-fA-F]{40}$/.test(v.trim());
 
 /** Maps a stored network label ("base", "USDT / ERC20", "BEP20", …) to a supported chain. */
 export function parseChain(network: string | null | undefined): Chain | null {
   const n = String(network ?? "").toLowerCase();
+  if (/robinhood/.test(n)) return "robinhood";
   if (/\bbase\b/.test(n)) return "base";
   if (/bep-?20|\bbsc\b|\bbnb\b/.test(n)) return "bsc";
   if (/erc-?20|\beth(ereum)?\b/.test(n)) return "ethereum";

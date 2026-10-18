@@ -355,7 +355,7 @@ function partyXml(tag, p, country, county, withVat) {
 function buildUblInvoice(input) {
   const problems = [];
   const currency = input.currency.trim().toUpperCase();
-  if (!/^[A-Z]{3}$/.test(currency) || currency === "USDT" || currency === "USDC") {
+  if (!/^[A-Z]{3}$/.test(currency) || currency === "USDT" || currency === "USDC" || currency === "USDG") {
     problems.push(`Currency ${currency} cannot be used on an e-Factura invoice; issue it in RON, EUR or USD.`);
   }
   const sellerCountry = countryCode(input.seller.country) ?? "RO";
@@ -678,7 +678,7 @@ function partyXml2(tag, p) {
 function buildPeppolInvoice(input) {
   const problems = [];
   const currency = input.currency.trim().toUpperCase();
-  if (!/^[A-Z]{3}$/.test(currency) || currency === "USDT" || currency === "USDC") {
+  if (!/^[A-Z]{3}$/.test(currency) || currency === "USDT" || currency === "USDC" || currency === "USDG") {
     problems.push(`Currency ${currency} is not an ISO 4217 code; stablecoin invoices must be issued in EUR, USD, \u2026`);
   }
   if (!input.number?.trim()) problems.push("Invoice number is missing.");
@@ -1197,22 +1197,32 @@ var STABLECOINS = [
     asset: "USDC",
     address: "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
     decimals: 18
+  },
+  // Robinhood Chain (chain id 4663): Paxos Global Dollar, verified on-chain 2026-10-18.
+  {
+    chain: "robinhood",
+    asset: "USDG",
+    address: "0x5fc5360d0400a0fd4f2af552add042d716f1d168",
+    decimals: 6
   }
 ];
 var CHAIN_NAMES = {
   base: "Base",
   ethereum: "Ethereum",
-  bsc: "BNB Chain"
+  bsc: "BNB Chain",
+  robinhood: "Robinhood Chain"
 };
 var TRANSFER_TOPIC = "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
 var USD_CURRENCIES = [
   "USD",
   "USDC",
-  "USDT"
+  "USDT",
+  "USDG"
 ];
 var isEvmAddress = (v) => !!v && /^0x[0-9a-fA-F]{40}$/.test(v.trim());
 function parseChain(network) {
   const n = String(network ?? "").toLowerCase();
+  if (/robinhood/.test(n)) return "robinhood";
   if (/\bbase\b/.test(n)) return "base";
   if (/bep-?20|\bbsc\b|\bbnb\b/.test(n)) return "bsc";
   if (/erc-?20|\beth(ereum)?\b/.test(n)) return "ethereum";
@@ -1317,7 +1327,7 @@ var str = (v) => typeof v === "string" && v.trim() ? v.trim() : null;
 var num = (v) => typeof v === "number" && Number.isFinite(v) ? v : null;
 function iso4217(currency) {
   const c = (currency ?? "").toUpperCase();
-  if (c === "USDT" || c === "USDC") return "USD";
+  if (c === "USDT" || c === "USDC" || c === "USDG") return "USD";
   return /^[A-Z]{3}$/.test(c) ? c : null;
 }
 function party(p, withStreet) {
@@ -1336,7 +1346,8 @@ function party(p, withStreet) {
 var CHAIN_LABELS = {
   base: "Base",
   ethereum: "Ethereum",
-  bsc: "BNB Chain"
+  bsc: "BNB Chain",
+  robinhood: "Robinhood Chain"
 };
 function describePayment(passport) {
   const payment = obj(passport.payment);

@@ -216,7 +216,7 @@ function partyXml(tag: string, p: UblParty, country: string, county: string | nu
 export function buildUblInvoice(input: UblInvoiceInput): UblResult {
   const problems: string[] = [];
   const currency = input.currency.trim().toUpperCase();
-  if (!/^[A-Z]{3}$/.test(currency) || currency === "USDT" || currency === "USDC") {
+  if (!/^[A-Z]{3}$/.test(currency) || currency === "USDT" || currency === "USDC" || currency === "USDG") {
     problems.push(`Currency ${currency} cannot be used on an e-Factura invoice; issue it in RON, EUR or USD.`);
   }
 
