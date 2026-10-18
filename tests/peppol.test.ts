@@ -1,4 +1,4 @@
-import { buildPeppolInvoice, type PeppolInvoiceInput } from "../src/peppol.ts";
+import { buildPeppolInvoice, peppolEndpointForVat, type PeppolInvoiceInput } from "../src/peppol.ts";
 
 function assert(cond: unknown, msg: string) {
   if (!cond) throw new Error("ASSERT: " + msg);
@@ -70,4 +70,17 @@ Deno.test("contradictions are reported instead of producing a rejectable invoice
   assert(usdt.problems.some((p) => p.includes("USDT")), "stablecoin");
   const wrongRate = buildPeppolInvoice({ ...de, lines: [{ ...de.lines[2], vatRate: 7 }] });
   assert(wrongRate.problems.some((p) => p.includes("must be 0%")), "E with a rate");
+});
+
+Deno.test("endpoint suggestion from a VAT id uses the official EAS VAT schemes", () => {
+  assert(JSON.stringify(peppolEndpointForVat("de 811 907 980")) === '{"scheme":"9930","id":"DE811907980"}', "DE");
+  assert(
+    peppolEndpointForVat("RO14399840")?.scheme === "9947" && peppolEndpointForVat("FR12345678901")?.scheme === "9957",
+    "RO/FR",
+  );
+  assert(
+    peppolEndpointForVat("14399840") === null && peppolEndpointForVat("US123") === null &&
+      peppolEndpointForVat(null) === null,
+    "no prefix / unknown",
+  );
 });

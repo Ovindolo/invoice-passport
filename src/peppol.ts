@@ -21,6 +21,48 @@ const DEFAULT_VATEX: Partial<Record<VatCategory, string>> = {
   O: "VATEX-EU-O",
 };
 
+/**
+ * Peppol EAS scheme for a country's VAT number, from the official OpenPeppol EAS code list
+ * (BIS Billing 3.0.20, structure/codelist/eas.xml). Only VAT-number schemes are listed; a buyer may
+ * be registered on the network under another identifier (e.g. Belgium 0208), so treat this as a
+ * suggestion to confirm.
+ */
+export const VAT_EAS: Record<string, string> = {
+  AT: "9914",
+  BE: "9925",
+  BG: "9926",
+  CY: "9928",
+  CZ: "9929",
+  DE: "9930",
+  EE: "9931",
+  ES: "9920",
+  FR: "9957",
+  GB: "9932",
+  GR: "9933",
+  EL: "9933",
+  HR: "9934",
+  HU: "9910",
+  IE: "9935",
+  LT: "9937",
+  LU: "9938",
+  LV: "9939",
+  MT: "9943",
+  NL: "9944",
+  PL: "9945",
+  PT: "9946",
+  RO: "9947",
+  SI: "9949",
+  SK: "9950",
+  CH: "9927",
+};
+
+/** Suggested Peppol endpoint for a VAT id with country prefix ("DE123456789" → 9930:DE123456789). */
+export function peppolEndpointForVat(vatId: string | null | undefined): { scheme: string; id: string } | null {
+  const v = String(vatId ?? "").replace(/[\s.-]/g, "").toUpperCase();
+  const scheme = VAT_EAS[v.slice(0, 2)];
+  return scheme && /^[A-Z]{2}[0-9A-Z]{2,}$/.test(v) ? { scheme, id: v } : null;
+}
+
 export interface PeppolParty {
   name: string;
   /** Peppol electronic address (BT-34 / BT-49): EAS scheme code (e.g. "0088", "9930", "0208") and id */
