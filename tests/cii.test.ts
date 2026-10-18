@@ -55,3 +55,30 @@ Deno.test("Factur-X PDF embeds the XML with PDF/A-3 metadata", async () => {
   const again = await PDFDocument.load(bytes);
   assert(again.getTitle() === "Facture");
 });
+
+Deno.test("Factur-X embeds supplements next to factur-x.xml, sorted, with AFRelationship Supplement", async () => {
+  const xml = buildCiiInvoice(base).xml!;
+  const pdf = await PDFDocument.create();
+  pdf.addPage();
+  const bytes = await saveAsFacturX(pdf, xml, {
+    title: "Facture",
+    author: "Atelier",
+    supplements: [{ filename: "transactions.csv", mimeType: "text/csv", content: new TextEncoder().encode("a,b\n") }],
+  });
+  const raw = new TextDecoder("latin1").decode(bytes);
+  assert(raw.includes("/AFRelationship /Supplement") && raw.includes("/AFRelationship /Alternative"));
+  assert(raw.indexOf("(factur-x.xml)") < raw.indexOf("(transactions.csv)"), "name tree order");
+});
+
+Deno.test("attachments are validated and embedded as BT-125", () => {
+  const ok = buildCiiInvoice({
+    ...base,
+    attachments: [{ id: "annex", filename: "tx.csv", mimeCode: "text/csv", base64: btoa("a,b\n") }],
+  });
+  assert(ok.xml!.includes('<ram:AttachmentBinaryObject mimeCode="text/csv" filename="tx.csv">'));
+  const bad = buildCiiInvoice({
+    ...base,
+    attachments: [{ id: "x", filename: "x.exe", mimeCode: "application/x-msdownload", base64: "AA==" }],
+  });
+  assert(bad.problems.some((p) => p.includes("MIME")), bad.problems.join("|"));
+});

@@ -128,8 +128,19 @@
           <ram:ID schemeID="VA">DE811907980</ram:ID>
         </ram:SpecifiedTaxRegistration>
       </ram:BuyerTradeParty>
+      <ram:AdditionalReferencedDocument>
+        <ram:IssuerAssignedID>annex-transactions</ram:IssuerAssignedID>
+        <ram:TypeCode>916</ram:TypeCode>
+        <ram:Name>Every on-chain payment in this invoice (full transaction hashes)</ram:Name>
+        <ram:AttachmentBinaryObject mimeCode="text/csv" filename="transactions.csv">dGltZV91dGMsY2hhaW4sYXNzZXQsYW1vdW50LHBheWVyLHR4X2hhc2gsbG9nX2luZGV4CjIwMjYtMTAtMDNUMDk6MTQ6MDJaLGJhc2UsVVNEQywwLjI1MDAwMCwweDlmMmM0MWQwN2EyYjFlNWMzZDhhNmY0YjJlMWQwYzliOGE3ZjZlNWQsMHg1ZTFmOGMyYTliN2Q0ZTNmNmExYzBiOWQ4ZTdmNmE1YjRjM2QyZTFmMGE5YjhjN2Q2ZTVmNGEzYjJjMWQwZTlmLDEyCjIwMjYtMTAtMTFUMTc6NDA6NTVaLGJhc2UsVVNEQywwLjI1MDAwMCwweDlmMmM0MWQwN2EyYjFlNWMzZDhhNmY0YjJlMWQwYzliOGE3ZjZlNWQsMHg3YTZiNWM0ZDNlMmYxYTBiOWM4ZDdlNmY1YTRiM2MyZDFlMGY5YThiN2M2ZDVlNGYzYTJiMWMwZDllOGY3YTZiLDQKMjAyNi0xMC0yOVQwODowMjozMVosYmFzZSxVU0RDLDEuNTAwMDAwLDB4OWYyYzQxZDA3YTJiMWU1YzNkOGE2ZjRiMmUxZDBjOWI4YTdmNmU1ZCwweDFmMmUzZDRjNWI2YTc5ODgwYTFiMmMzZDRlNWY2MDcxODI5M2E0YjVjNmQ3ZThmOTBhMWIyYzNkNGU1ZjYwNzEsNwo=</ram:AttachmentBinaryObject>
+      </ram:AdditionalReferencedDocument>
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>
+      <ram:ActualDeliverySupplyChainEvent>
+        <ram:OccurrenceDateTime>
+          <udt:DateTimeString format="102">20261031</udt:DateTimeString>
+        </ram:OccurrenceDateTime>
+      </ram:ActualDeliverySupplyChainEvent>
     </ram:ApplicableHeaderTradeDelivery>
     <ram:ApplicableHeaderTradeSettlement>
       <ram:TaxCurrencyCode>RON</ram:TaxCurrencyCode>

@@ -5,6 +5,7 @@
  * scope, foreign invoice currencies with the tax in AED / SGD. Missing data comes back as problems;
  * output is checked against the official PINT and jurisdiction schematron (see conformance/).
  */
+import { attachmentProblems, type InvoiceAttachment, ublAttachments } from "./peppol.ts";
 import { isValidIban } from "./sepa.ts";
 
 export const PINT_AE = "urn:peppol:pint:billing-1@ae-1";
@@ -73,6 +74,8 @@ export interface PintInvoiceInput {
   paymentTerms?: string | null;
   /** units of AED / SGD per 1 unit of the invoice currency; required when the invoice is in another currency */
   taxCurrencyRate?: number | null;
+  /** supporting documents embedded in the invoice, e.g. the CSV of on-chain transactions */
+  attachments?: InvoiceAttachment[];
 }
 
 export interface PintResult {
@@ -211,6 +214,7 @@ export function buildPintInvoice(input: PintInvoiceInput): PintResult {
     if (!(l.quantity !== 0 && Number.isFinite(l.quantity))) problems.push(`Line ${n + 1} quantity is invalid.`);
     if (!(l.unitPrice >= 0)) problems.push(`Line ${n + 1} unit price must be zero or positive.`);
   }
+  problems.push(...attachmentProblems(input.attachments));
   if (problems.length > 0) return { xml: null, problems };
 
   const lines = input.lines.map((l, i) => {
@@ -333,7 +337,9 @@ ${indent}</cac:TaxScheme>`;
     <cbc:DocumentDescription>${money(net * rate + round2(vat * rate))}</cbc:DocumentDescription>
   </cac:AdditionalDocumentReference>`
       : ""
-  }${party("AccountingSupplierParty", seller)}${party("AccountingCustomerParty", buyer)}${
+  }${ublAttachments(input.attachments)}${party("AccountingSupplierParty", seller)}${
+    party("AccountingCustomerParty", buyer)
+  }${
     exportSale
       ? `
   <cac:Delivery>

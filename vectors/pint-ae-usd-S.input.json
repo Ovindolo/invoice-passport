@@ -48,5 +48,14 @@
     }
   ],
   "paymentTerms": "Paid in USDC on Base",
-  "taxCurrencyRate": 3.6725
+  "taxCurrencyRate": 3.6725,
+  "attachments": [
+    {
+      "id": "annex-transactions",
+      "description": "Every on-chain payment in this invoice (full transaction hashes)",
+      "filename": "transactions.csv",
+      "mimeCode": "text/csv",
+      "base64": "dGltZV91dGMsY2hhaW4sYXNzZXQsYW1vdW50LHBheWVyLHR4X2hhc2gsbG9nX2luZGV4CjIwMjYtMTAtMDNUMDk6MTQ6MDJaLGJhc2UsVVNEQywwLjI1MDAwMCwweDlmMmM0MWQwN2EyYjFlNWMzZDhhNmY0YjJlMWQwYzliOGE3ZjZlNWQsMHg1ZTFmOGMyYTliN2Q0ZTNmNmExYzBiOWQ4ZTdmNmE1YjRjM2QyZTFmMGE5YjhjN2Q2ZTVmNGEzYjJjMWQwZTlmLDEyCjIwMjYtMTAtMTFUMTc6NDA6NTVaLGJhc2UsVVNEQywwLjI1MDAwMCwweDlmMmM0MWQwN2EyYjFlNWMzZDhhNmY0YjJlMWQwYzliOGE3ZjZlNWQsMHg3YTZiNWM0ZDNlMmYxYTBiOWM4ZDdlNmY1YTRiM2MyZDFlMGY5YThiN2M2ZDVlNGYzYTJiMWMwZDllOGY3YTZiLDQKMjAyNi0xMC0yOVQwODowMjozMVosYmFzZSxVU0RDLDEuNTAwMDAwLDB4OWYyYzQxZDA3YTJiMWU1YzNkOGE2ZjRiMmUxZDBjOWI4YTdmNmU1ZCwweDFmMmUzZDRjNWI2YTc5ODgwYTFiMmMzZDRlNWY2MDcxODI5M2E0YjVjNmQ3ZThmOTBhMWIyYzNkNGU1ZjYwNzEsNwo="
+    }
+  ]
 }

@@ -1,0 +1,70 @@
+{
+  "number": "MR-2026-10-0007",
+  "issueDate": "2026-10-31",
+  "currency": "USD",
+  "buyerReference": "0x9f2c41d07a2b1e5c3d8a6f4b2e1d0c9b8a7f6e5d",
+  "note": "Consolidated invoice for x402 API payments in USDC on Base (eip155:8453), October 2026.",
+  "seller": {
+    "name": "Billify Demo SRL",
+    "vatId": "RO12345674",
+    "street": "Strada Exemplu 1",
+    "city": "Cluj-Napoca",
+    "postalCode": "400001",
+    "country": "RO",
+    "endpoint": {
+      "scheme": "9947",
+      "id": "RO12345674"
+    }
+  },
+  "buyer": {
+    "name": "Agent Labs GmbH",
+    "vatId": "DE811907980",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "DE",
+    "endpoint": {
+      "scheme": "9930",
+      "id": "DE811907980"
+    }
+  },
+  "lines": [
+    {
+      "description": "API call /v1/quote (x402)",
+      "quantity": 1,
+      "unitPrice": 0.25,
+      "vatCategory": "AE",
+      "vatRate": 0
+    },
+    {
+      "description": "API call /v1/quote (x402)",
+      "quantity": 1,
+      "unitPrice": 0.25,
+      "vatCategory": "AE",
+      "vatRate": 0
+    },
+    {
+      "description": "API call /v1/report (x402)",
+      "quantity": 1,
+      "unitPrice": 1.5,
+      "vatCategory": "AE",
+      "vatRate": 0
+    }
+  ],
+  "paymentTerms": "Paid on-chain in USDC at the time of each call.",
+  "taxCurrency": {
+    "code": "RON",
+    "rate": 4.4012
+  },
+  "attachments": [
+    {
+      "id": "annex-transactions",
+      "description": "Every on-chain payment in this invoice (full transaction hashes)",
+      "filename": "transactions.csv",
+      "mimeCode": "text/csv",
+      "base64": "dGltZV91dGMsY2hhaW4sYXNzZXQsYW1vdW50LHBheWVyLHR4X2hhc2gsbG9nX2luZGV4CjIwMjYtMTAtMDNUMDk6MTQ6MDJaLGJhc2UsVVNEQywwLjI1MDAwMCwweDlmMmM0MWQwN2EyYjFlNWMzZDhhNmY0YjJlMWQwYzliOGE3ZjZlNWQsMHg1ZTFmOGMyYTliN2Q0ZTNmNmExYzBiOWQ4ZTdmNmE1YjRjM2QyZTFmMGE5YjhjN2Q2ZTVmNGEzYjJjMWQwZTlmLDEyCjIwMjYtMTAtMTFUMTc6NDA6NTVaLGJhc2UsVVNEQywwLjI1MDAwMCwweDlmMmM0MWQwN2EyYjFlNWMzZDhhNmY0YjJlMWQwYzliOGE3ZjZlNWQsMHg3YTZiNWM0ZDNlMmYxYTBiOWM4ZDdlNmY1YTRiM2MyZDFlMGY5YThiN2M2ZDVlNGYzYTJiMWMwZDllOGY3YTZiLDQKMjAyNi0xMC0yOVQwODowMjozMVosYmFzZSxVU0RDLDEuNTAwMDAwLDB4OWYyYzQxZDA3YTJiMWU1YzNkOGE2ZjRiMmUxZDBjOWI4YTdmNmU1ZCwweDFmMmUzZDRjNWI2YTc5ODgwYTFiMmMzZDRlNWY2MDcxODI5M2E0YjVjNmQ3ZThmOTBhMWIyYzNkNGU1ZjYwNzEsNwo="
+    }
+  ],
+  "delivery": {
+    "date": "2026-10-31"
+  }
+}

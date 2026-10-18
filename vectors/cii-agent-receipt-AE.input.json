@@ -20,10 +20,46 @@
     "country": "DE"
   },
   "lines": [
-    { "description": "API call /v1/quote (x402)", "quantity": 1, "unitPrice": 0.25, "vatCategory": "AE", "vatRate": 0, "note": "tx 0x5e1f8c2a9b7d4e3f6a1c0b9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f" },
-    { "description": "API call /v1/quote (x402)", "quantity": 1, "unitPrice": 0.25, "vatCategory": "AE", "vatRate": 0, "note": "tx 0x7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b" },
-    { "description": "API call /v1/report (x402)", "quantity": 1, "unitPrice": 1.5, "vatCategory": "AE", "vatRate": 0, "note": "tx 0x1f2e3d4c5b6a79880a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6071" }
+    {
+      "description": "API call /v1/quote (x402)",
+      "quantity": 1,
+      "unitPrice": 0.25,
+      "vatCategory": "AE",
+      "vatRate": 0,
+      "note": "tx 0x5e1f8c2a9b7d4e3f6a1c0b9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f"
+    },
+    {
+      "description": "API call /v1/quote (x402)",
+      "quantity": 1,
+      "unitPrice": 0.25,
+      "vatCategory": "AE",
+      "vatRate": 0,
+      "note": "tx 0x7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b"
+    },
+    {
+      "description": "API call /v1/report (x402)",
+      "quantity": 1,
+      "unitPrice": 1.5,
+      "vatCategory": "AE",
+      "vatRate": 0,
+      "note": "tx 0x1f2e3d4c5b6a79880a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6071"
+    }
   ],
   "paymentTerms": "Paid on-chain in USDC at the time of each call.",
-  "taxCurrency": { "code": "RON", "rate": 4.4012 }
+  "taxCurrency": {
+    "code": "RON",
+    "rate": 4.4012
+  },
+  "attachments": [
+    {
+      "id": "annex-transactions",
+      "description": "Every on-chain payment in this invoice (full transaction hashes)",
+      "filename": "transactions.csv",
+      "mimeCode": "text/csv",
+      "base64": "dGltZV91dGMsY2hhaW4sYXNzZXQsYW1vdW50LHBheWVyLHR4X2hhc2gsbG9nX2luZGV4CjIwMjYtMTAtMDNUMDk6MTQ6MDJaLGJhc2UsVVNEQywwLjI1MDAwMCwweDlmMmM0MWQwN2EyYjFlNWMzZDhhNmY0YjJlMWQwYzliOGE3ZjZlNWQsMHg1ZTFmOGMyYTliN2Q0ZTNmNmExYzBiOWQ4ZTdmNmE1YjRjM2QyZTFmMGE5YjhjN2Q2ZTVmNGEzYjJjMWQwZTlmLDEyCjIwMjYtMTAtMTFUMTc6NDA6NTVaLGJhc2UsVVNEQywwLjI1MDAwMCwweDlmMmM0MWQwN2EyYjFlNWMzZDhhNmY0YjJlMWQwYzliOGE3ZjZlNWQsMHg3YTZiNWM0ZDNlMmYxYTBiOWM4ZDdlNmY1YTRiM2MyZDFlMGY5YThiN2M2ZDVlNGYzYTJiMWMwZDllOGY3YTZiLDQKMjAyNi0xMC0yOVQwODowMjozMVosYmFzZSxVU0RDLDEuNTAwMDAwLDB4OWYyYzQxZDA3YTJiMWU1YzNkOGE2ZjRiMmUxZDBjOWI4YTdmNmU1ZCwweDFmMmUzZDRjNWI2YTc5ODgwYTFiMmMzZDRlNWY2MDcxODI5M2E0YjVjNmQ3ZThmOTBhMWIyYzNkNGU1ZjYwNzEsNwo="
+    }
+  ],
+  "delivery": {
+    "date": "2026-10-31"
+  }
 }

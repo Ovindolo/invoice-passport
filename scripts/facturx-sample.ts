@@ -52,3 +52,38 @@ const bytes = await saveAsFacturX(pdf, cii.xml, {
 });
 await Deno.writeFile(new URL("vectors/facturx-fr-fr-S.pdf", root), bytes);
 console.log(`facturx-fr-fr-S.pdf ${bytes.length} bytes`);
+
+// Agent-payment receipt with the transaction annex embedded as a supplement (CSV) and in the XML.
+const receipt = JSON.parse(
+  await Deno.readTextFile(new URL("vectors/cii-agent-receipt-AE.input.json", root)),
+) as CiiInvoiceInput;
+const receiptCii = buildCiiInvoice(receipt);
+if (!receiptCii.xml) throw new Error(receiptCii.problems.join("; "));
+const doc2 = await PDFDocument.create();
+doc2.registerFontkit(fontkit);
+const f2 = await doc2.embedFont(await Deno.readFile(new URL("conformance/.cache/fonts/DejaVuSans.ttf", root)), {
+  subset: true,
+});
+doc2.addPage([595.28, 841.89]).drawText(
+  `Invoice ${receipt.number}: ${receipt.lines.length} x402 payments, see transactions.csv`,
+  {
+    x: 50,
+    y: 790,
+    size: 11,
+    font: f2,
+  },
+);
+const annex = receipt.attachments![0];
+const bytes2 = await saveAsFacturX(doc2, receiptCii.xml, {
+  title: `Invoice ${receipt.number}`,
+  author: receipt.seller.name,
+  date: new Date("2026-10-31T10:00:00Z"),
+  supplements: [{
+    filename: annex.filename,
+    mimeType: annex.mimeCode,
+    content: Uint8Array.from(atob(annex.base64), (c) => c.charCodeAt(0)),
+    description: annex.description ?? undefined,
+  }],
+});
+await Deno.writeFile(new URL("vectors/facturx-agent-receipt-AE.pdf", root), bytes2);
+console.log(`facturx-agent-receipt-AE.pdf ${bytes2.length} bytes`);

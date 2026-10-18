@@ -5,7 +5,13 @@
  * Output is checked against the official CEN EN 16931 CII schematron and the D16B XSD
  * (see conformance/).
  */
-import type { PeppolInvoiceInput, PeppolLine, PeppolParty, VatCategory } from "./peppol.ts";
+import {
+  attachmentProblems,
+  type PeppolInvoiceInput,
+  type PeppolLine,
+  type PeppolParty,
+  type VatCategory,
+} from "./peppol.ts";
 import { isValidCreditorReference, isValidIban } from "./sepa.ts";
 
 /** Factur-X / ZUGFeRD "EN 16931" (COMFORT) profile. */
@@ -190,6 +196,7 @@ export function buildCiiInvoice(input: CiiInvoiceInput): CiiResult {
   if (input.taxCurrency && !(input.taxCurrency.rate > 0 && /^[A-Z]{3}$/.test(input.taxCurrency.code))) {
     problems.push("Tax currency needs a 3-letter code and a positive exchange rate.");
   }
+  problems.push(...attachmentProblems(input.attachments));
   if (problems.length > 0) return { xml: null, problems, totals: null };
 
   const lines = input.lines.map((l, idx) => ({ ...l, id: idx + 1, net: round2(l.quantity * l.unitPrice) }));
@@ -275,6 +282,15 @@ export function buildCiiInvoice(input: CiiInvoiceInput): CiiResult {
         <ram:IssuerAssignedID>${esc(input.orderReference)}</ram:IssuerAssignedID>
       </ram:BuyerOrderReferencedDocument>`
       : ""
+  }${
+    (input.attachments ?? []).map((a) => `
+      <ram:AdditionalReferencedDocument>
+        <ram:IssuerAssignedID>${esc(a.id)}</ram:IssuerAssignedID>
+        <ram:TypeCode>916</ram:TypeCode>${el("        ", "ram:Name", a.description)}
+        <ram:AttachmentBinaryObject mimeCode="${esc(a.mimeCode)}" filename="${
+      esc(a.filename)
+    }">${a.base64}</ram:AttachmentBinaryObject>
+      </ram:AdditionalReferencedDocument>`).join("")
   }
     </ram:ApplicableHeaderTradeAgreement>
     <ram:ApplicableHeaderTradeDelivery>${

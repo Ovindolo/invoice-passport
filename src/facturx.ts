@@ -22,12 +22,14 @@ export interface FacturXMeta {
   producer?: string;
   /** Fixed timestamp for reproducible output; defaults to now. */
   date?: Date;
+  /** Extra files embedded next to factur-x.xml (AFRelationship Supplement), e.g. a transaction annex. */
+  supplements?: { filename: string; mimeType: string; content: Uint8Array; description?: string }[];
 }
 
 const xmlEsc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 const b64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 
-function xmp(meta: Required<Omit<FacturXMeta, "date">>, iso: string): string {
+function xmp(meta: Required<Omit<FacturXMeta, "date" | "supplements">>, iso: string): string {
   const prop = (name: string, description: string) => `
               <rdf:li rdf:parseType="Resource">
                 <pdfaProperty:name>${name}</pdfaProperty:name>
@@ -116,28 +118,35 @@ export async function saveAsFacturX(pdf: PDFDocument, ciiXml: string, input: Fac
   pdf.setModificationDate(date);
   pdf.setLanguage("en");
 
-  // Embedded file and its file specification (PDF/A-3: AFRelationship + catalog /AF).
+  // Embedded files and their file specifications (PDF/A-3: AFRelationship + catalog /AF).
   const pdfDate = PDFString.fromDate(date);
-  const fileStream = ctx.flateStream(xmlBytes, {
-    Type: "EmbeddedFile",
-    Subtype: PDFName.of("text/xml"),
-    Params: { Size: xmlBytes.length, ModDate: pdfDate },
-  });
-  const fileRef = ctx.register(fileStream);
-  const fileSpec = ctx.obj({
-    Type: "Filespec",
-    F: PDFString.of(FACTURX_FILENAME),
-    UF: PDFHexString.fromText(FACTURX_FILENAME),
-    Desc: PDFString.of("Factur-X invoice"),
-    AFRelationship: "Alternative",
-    EF: { F: fileRef, UF: fileRef },
-  });
-  const fileSpecRef = ctx.register(fileSpec);
+  const embed = (name: string, mime: string, bytes: Uint8Array, description: string, relationship: string) => {
+    const fileRef = ctx.register(ctx.flateStream(bytes, {
+      Type: "EmbeddedFile",
+      Subtype: PDFName.of(mime),
+      Params: { Size: bytes.length, ModDate: pdfDate },
+    }));
+    return ctx.register(ctx.obj({
+      Type: "Filespec",
+      F: PDFString.of(name),
+      UF: PDFHexString.fromText(name),
+      Desc: PDFString.of(description),
+      AFRelationship: relationship,
+      EF: { F: fileRef, UF: fileRef },
+    }));
+  };
+  const files = [
+    { name: FACTURX_FILENAME, ref: embed(FACTURX_FILENAME, "text/xml", xmlBytes, "Factur-X invoice", "Alternative") },
+    ...(input.supplements ?? []).map((f) => ({
+      name: f.filename,
+      ref: embed(f.filename, f.mimeType, f.content, f.description ?? f.filename, "Supplement"),
+    })),
+  ].sort((a, b) => (a.name < b.name ? -1 : 1)); // the name tree must be sorted
   catalog.set(
     PDFName.of("Names"),
-    ctx.obj({ EmbeddedFiles: { Names: [PDFString.of(FACTURX_FILENAME), fileSpecRef] } }),
+    ctx.obj({ EmbeddedFiles: { Names: files.flatMap((f) => [PDFString.of(f.name), f.ref]) } }),
   );
-  catalog.set(PDFName.of("AF"), ctx.obj([fileSpecRef]));
+  catalog.set(PDFName.of("AF"), ctx.obj(files.map((f) => f.ref)));
 
   // XMP metadata (left uncompressed so readers and validators can find it).
   const xmpBytes = new TextEncoder().encode(xmp(meta, date.toISOString().replace(".000Z", "Z")));

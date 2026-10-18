@@ -128,6 +128,57 @@ export interface PeppolInvoiceInput {
   exemptionReasons?: Partial<Record<VatCategory, { code?: string; text?: string }>>;
   /** VAT accounting currency (BT-6) with the rate from invoice currency (1 unit = rate units) */
   taxCurrency?: { code: string; rate: number } | null;
+  /** supporting documents embedded in the invoice (BG-24), e.g. the CSV of on-chain transactions */
+  attachments?: InvoiceAttachment[];
+}
+
+/** An embedded supporting document (BT-122 id, BT-123 description, BT-125 content). */
+export interface InvoiceAttachment {
+  id: string;
+  description?: string | null;
+  filename: string;
+  /** one of the Peppol MIME codes: text/csv, application/pdf, image/png, image/jpeg, xlsx, ods */
+  mimeCode: string;
+  /** file content, base64 */
+  base64: string;
+}
+
+export const ATTACHMENT_MIME_CODES = [
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "text/csv",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.oasis.opendocument.spreadsheet",
+];
+
+/** Problems with attachments, shared by the UBL, CII and PINT builders. */
+export function attachmentProblems(attachments: InvoiceAttachment[] | undefined): string[] {
+  const problems: string[] = [];
+  for (const [n, a] of (attachments ?? []).entries()) {
+    if (!a.id?.trim()) problems.push(`Attachment ${n + 1} needs an identifier.`);
+    if (!a.filename?.trim()) problems.push(`Attachment ${n + 1} needs a file name.`);
+    if (!ATTACHMENT_MIME_CODES.includes(a.mimeCode)) {
+      problems.push(`Attachment ${n + 1}: MIME type ${a.mimeCode} is not allowed.`);
+    }
+    if (!/^[A-Za-z0-9+/]+={0,2}$/.test(a.base64 ?? "")) problems.push(`Attachment ${n + 1} content must be base64.`);
+  }
+  return problems;
+}
+
+/** UBL AdditionalDocumentReference elements for the attachments. */
+export function ublAttachments(attachments: InvoiceAttachment[] | undefined): string {
+  return (attachments ?? []).map((a) => `
+  <cac:AdditionalDocumentReference>
+    <cbc:ID>${esc(a.id)}</cbc:ID>${
+    a.description ? `\n    <cbc:DocumentDescription>${esc(a.description)}</cbc:DocumentDescription>` : ""
+  }
+    <cac:Attachment>
+      <cbc:EmbeddedDocumentBinaryObject mimeCode="${esc(a.mimeCode)}" filename="${
+    esc(a.filename)
+  }">${a.base64}</cbc:EmbeddedDocumentBinaryObject>
+    </cac:Attachment>
+  </cac:AdditionalDocumentReference>`).join("");
 }
 
 export interface PeppolResult {
@@ -290,6 +341,7 @@ export function buildPeppolInvoice(input: PeppolInvoiceInput, profile: InvoicePr
   if (input.taxCurrency && !(input.taxCurrency.rate > 0 && /^[A-Z]{3}$/.test(input.taxCurrency.code))) {
     problems.push("Tax currency needs a 3-letter code and a positive exchange rate.");
   }
+  problems.push(...attachmentProblems(input.attachments));
 
   if (problems.length > 0) return { xml: null, problems };
 
@@ -337,7 +389,9 @@ ${indent}</cac:TaxScheme>`;
     <cbc:ID>${esc(input.orderReference)}</cbc:ID>
   </cac:OrderReference>`
       : ""
-  }${partyXml("AccountingSupplierParty", input.seller)}${partyXml("AccountingCustomerParty", input.buyer)}${
+  }${ublAttachments(input.attachments)}${partyXml("AccountingSupplierParty", input.seller)}${
+    partyXml("AccountingCustomerParty", input.buyer)
+  }${
     input.delivery && (input.delivery.date || input.delivery.country)
       ? `
   <cac:Delivery>${el("    ", "cbc:ActualDeliveryDate", input.delivery.date)}${
