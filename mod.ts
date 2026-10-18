@@ -19,3 +19,4 @@ export * from "./src/jurisdictions.ts";
 export * from "./src/cii.ts";
 export * from "./src/facturx.ts";
 export * from "./src/taxfx.ts";
+export * from "./src/pint.ts";

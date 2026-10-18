@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Checks every XML in vectors/ against the UBL 2.1 XSD and the official schematron rules:
-# CEN EN 16931 (UBL and CII invoices, cii-* against the D16B XSD), OpenPeppol BIS Billing 3.0 (peppol-*) and KoSIT XRechnung 3.0 (xrechnung-*).
+# CEN EN 16931 (UBL and CII invoices, cii-* against the D16B XSD), PINT AE / SG (pint-*), OpenPeppol BIS Billing 3.0 (peppol-*) and KoSIT XRechnung 3.0 (xrechnung-*).
 # Also validates the UNVTD PaymentConfirmation vector against the UN/CEFACT JSON Schema.
 # Needs curl, unzip, xmllint and Python 3; downloads the rules into conformance/.cache.
 set -euo pipefail
@@ -49,14 +49,21 @@ fi
 curl -sfL -o "$CACHE/unvtd-payment-confirmation-schema.yaml" https://unvtd.unece.org/payment-confirmation-schema.yaml
 
 status=0
-for f in ../vectors/ubl-*.xml ../vectors/peppol-*.xml ../vectors/xrechnung-*.xml; do
+for juris in ae sg; do
+  if [ ! -d "$CACHE/pint-$juris/trn-invoice" ]; then
+    mkdir -p "$CACHE/pint-$juris"
+    curl -sfL -o "$CACHE/pint-$juris/r.zip" "https://docs.peppol.eu/poac/$juris/pint-$juris/resources.zip"
+    (cd "$CACHE/pint-$juris" && unzip -q -o r.zip)
+  fi
+done
+for f in ../vectors/ubl-*.xml ../vectors/peppol-*.xml ../vectors/xrechnung-*.xml ../vectors/pint-*.xml; do
   xmllint --noout --schema "$CACHE/ubl/xsd/maindoc/UBL-Invoice-2.1.xsd" "$f" 2>/dev/null || { echo "XSD FAIL $f"; status=1; }
 done
 for f in ../vectors/cii-*.xml; do
   xmllint --noout --schema "$CII_XSD" "$f" 2>/dev/null || { echo "XSD FAIL $f"; status=1; }
 done
 "$CACHE/venv/bin/python" schematron.py "$CACHE" "$PEPPOL_VERSION" ../vectors/ubl-*.xml ../vectors/peppol-*.xml \
-  ../vectors/xrechnung-*.xml ../vectors/cii-*.xml || status=1
+  ../vectors/xrechnung-*.xml ../vectors/cii-*.xml ../vectors/pint-*.xml || status=1
 # DejaVu fonts for scripts/facturx-sample.ts (PDF/A needs embedded fonts).
 mkdir -p "$CACHE/fonts"
 for font in DejaVuSans DejaVuSans-Bold; do

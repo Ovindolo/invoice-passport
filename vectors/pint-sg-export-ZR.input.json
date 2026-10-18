@@ -1,0 +1,46 @@
+{
+  "jurisdiction": "sg",
+  "number": "LC-2026-0044",
+  "uuid": "3c4d5e6f-7a8b-4c9d-8e1f-2a3b4c5d6e7f",
+  "issueDate": "2026-10-18",
+  "paymentTerms": "30 days",
+  "currency": "USD",
+  "buyerReference": "AG-55",
+  "seller": {
+    "name": "Lion City Software Pte. Ltd.",
+    "taxId": "201912345K",
+    "legalId": {
+      "id": "201912345K"
+    },
+    "street": "1 Raffles Place",
+    "city": "Singapore",
+    "postalCode": "048616",
+    "country": "SG",
+    "contact": {
+      "name": "Wei Ling Tan",
+      "email": "ar@lioncity.example"
+    }
+  },
+  "buyer": {
+    "name": "Agent Labs GmbH",
+    "endpoint": {
+      "scheme": "9930",
+      "id": "DE811907980"
+    },
+    "taxId": "DE811907980",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "DE",
+    "street": "Friedrichstrasse 10"
+  },
+  "lines": [
+    {
+      "name": "International software services",
+      "quantity": 1,
+      "unitPrice": 900,
+      "taxCategory": "ZR",
+      "taxRate": 0
+    }
+  ],
+  "taxCurrencyRate": 1.279214
+}

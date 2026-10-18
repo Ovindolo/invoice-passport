@@ -27,6 +27,7 @@ The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 
 | `src/onchain.ts`       | Direct stablecoin payments (USDC/USDT on Base, Ethereum, BNB Chain; USDG on Robinhood Chain): unique pay amounts, Transfer log decoding, matching |
 | `src/xml.ts`           | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                                                                |
 | `src/peppol.ts`        | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931) and XRechnung 3.0: VAT categories S, Z, E, AE, K, G, O                                      |
+| `src/pint.ts`          | Peppol PINT AE 1.0.4 (UAE mandate) and PINT SG 1.4.1 (Singapore InvoiceNow) invoices                                                              |
 | `src/cii.ts`           | UN/CEFACT CII D16B invoice (EN 16931), French BR-FR notes and 0225 addresses                                                                      |
 | `src/facturx.ts`       | Factur-X / ZUGFeRD: CII embedded in a PDF/A-3b with the Factur-X XMP schema                                                                       |
 | `src/jurisdictions.ts` | Invoicing rules per jurisdiction (EU, UAE, Singapore, Panama, UK, CH, offshore hubs) and compliance findings                                      |
@@ -123,6 +124,8 @@ deno task conformance  # XSD + official EN 16931 / Peppol schematron on every XM
 - RO e-Factura (CIUS-RO 1.0.1) for Romanian buyers, VAT categories S and O, accepted by ANAF's validator.
 - Peppol BIS Billing 3.0 for EU invoicing: VAT categories S, Z, E, AE, K, G, O, mixed rates, RF payment reference, tax
   currency, and the fatal national rules for DE, IT and NL sellers.
+- PINT AE (UAE e-invoicing mandate) and PINT SG (InvoiceNow), validated with the official PINT and jurisdiction
+  schematron.
 - XRechnung 3.0 (Germany) and Factur-X EN 16931 (France, Germany): PDF/A-3b validated with veraPDF and Mustang,
   including the French reform rules (BR-FR).
 - Signatures: ES256 only.

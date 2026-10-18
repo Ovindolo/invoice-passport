@@ -1,0 +1,47 @@
+{
+  "jurisdiction": "ae",
+  "number": "DL-2026-0103",
+  "uuid": "0f1e2d3c-4b5a-4968-8776-655443322110",
+  "issueDate": "2026-10-18",
+  "dueDate": "2026-11-17",
+  "currency": "USD",
+  "buyerReference": "PO-77",
+  "seller": {
+    "name": "Desert Labs FZ-LLC",
+    "taxId": "100123456700003",
+    "legalId": {
+      "id": "1234567",
+      "type": "TL",
+      "authority": "Dubai Economy and Tourism"
+    },
+    "street": "Sheikh Zayed Road 1",
+    "city": "Dubai",
+    "subdivision": "DXB",
+    "country": "AE",
+    "contact": {
+      "name": "Layla Haddad",
+      "email": "billing@desertlabs.example"
+    }
+  },
+  "buyer": {
+    "name": "Agent Labs Inc.",
+    "street": "1 Market St",
+    "city": "San Francisco",
+    "postalCode": "94105",
+    "subdivision": "CA",
+    "country": "US"
+  },
+  "lines": [
+    {
+      "name": "Consulting services",
+      "description": "Metered API access, October 2026",
+      "quantity": 1,
+      "unitPrice": 2500,
+      "taxCategory": "Z",
+      "taxRate": 0,
+      "itemType": "S",
+      "serviceCode": "998314"
+    }
+  ],
+  "taxCurrencyRate": 3.6725
+}

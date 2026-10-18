@@ -1,0 +1,45 @@
+{
+  "jurisdiction": "sg",
+  "number": "LC-2026-0043",
+  "uuid": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+  "issueDate": "2026-10-18",
+  "dueDate": "2026-11-17",
+  "currency": "USD",
+  "buyerReference": "MR-PO-119",
+  "seller": {
+    "name": "Lion City Software Pte. Ltd.",
+    "taxId": "201912345K",
+    "legalId": {
+      "id": "201912345K"
+    },
+    "street": "1 Raffles Place",
+    "city": "Singapore",
+    "postalCode": "048616",
+    "country": "SG",
+    "contact": {
+      "name": "Wei Ling Tan",
+      "email": "ar@lioncity.example"
+    }
+  },
+  "buyer": {
+    "name": "Merlion Retail Pte. Ltd.",
+    "taxId": "200512345D",
+    "legalId": {
+      "id": "200512345D"
+    },
+    "street": "10 Orchard Road",
+    "city": "Singapore",
+    "postalCode": "238826",
+    "country": "SG"
+  },
+  "lines": [
+    {
+      "name": "SaaS subscription October",
+      "quantity": 1,
+      "unitPrice": 600,
+      "taxCategory": "SR",
+      "taxRate": 9
+    }
+  ],
+  "taxCurrencyRate": 1.279214
+}

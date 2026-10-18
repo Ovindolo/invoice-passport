@@ -1,0 +1,54 @@
+{
+  "jurisdiction": "ae",
+  "number": "DL-2026-0101",
+  "uuid": "5b0b6c1e-3f7a-4c2e-9d61-2a4f8b9c0d11",
+  "issueDate": "2026-10-18",
+  "dueDate": "2026-11-17",
+  "currency": "AED",
+  "seller": {
+    "name": "Desert Labs FZ-LLC",
+    "taxId": "100123456700003",
+    "legalId": {
+      "id": "1234567",
+      "type": "TL",
+      "authority": "Dubai Economy and Tourism"
+    },
+    "street": "Sheikh Zayed Road 1",
+    "city": "Dubai",
+    "subdivision": "DXB",
+    "country": "AE",
+    "contact": {
+      "name": "Layla Haddad",
+      "email": "billing@desertlabs.example"
+    }
+  },
+  "buyer": {
+    "name": "Falcon Trading LLC",
+    "taxId": "100987654300003",
+    "legalId": {
+      "id": "7654321",
+      "type": "TL",
+      "authority": "Abu Dhabi Department of Economic Development"
+    },
+    "street": "Corniche Road 5",
+    "city": "Abu Dhabi",
+    "subdivision": "AUH",
+    "country": "AE"
+  },
+  "lines": [
+    {
+      "name": "API usage October",
+      "description": "Metered API access, October 2026",
+      "quantity": 1,
+      "unitPrice": 1200,
+      "taxCategory": "S",
+      "taxRate": 5,
+      "itemType": "S",
+      "serviceCode": "998314"
+    }
+  ],
+  "payment": {
+    "account": "AE070331234567890123456",
+    "reference": "DL-2026-0101"
+  }
+}

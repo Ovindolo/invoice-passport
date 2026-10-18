@@ -6,6 +6,7 @@
 import { buildUblInvoice, type UblInvoiceInput } from "../src/ubl.ts";
 import { buildPeppolInvoice, type PeppolInvoiceInput } from "../src/peppol.ts";
 import { buildCiiInvoice, type CiiInvoiceInput } from "../src/cii.ts";
+import { buildPintInvoice, type PintInvoiceInput } from "../src/pint.ts";
 import { didWebDocument, paymentConfirmationFromPassport, signCredential } from "../src/unvtd.ts";
 import { generateSigningKey, loadSigningKey } from "../src/jws.ts";
 import { buildPassport, CIUS_RO_FORMAT, eInvoiceReference, type PassportInput, signPassport } from "../mod.ts";
@@ -36,6 +37,15 @@ for await (const entry of Deno.readDir(dir)) {
   if (!m) continue;
   const profile = m[2] === "xrechnung" ? "xrechnung" : "peppol";
   const result = buildPeppolInvoice(JSON.parse(await read(entry.name)) as PeppolInvoiceInput, profile);
+  if (!result.xml) throw new Error(`${m[1]}: ${result.problems.join("; ")}`);
+  await write(`${m[1]}.xml`, result.xml);
+}
+
+// PINT AE / PINT SG (UAE and Singapore).
+for await (const entry of Deno.readDir(dir)) {
+  const m = entry.name.match(/^(pint-(ae|sg)-.+)\.input\.json$/);
+  if (!m) continue;
+  const result = buildPintInvoice(JSON.parse(await read(entry.name)) as PintInvoiceInput);
   if (!result.xml) throw new Error(`${m[1]}: ${result.problems.join("; ")}`);
   await write(`${m[1]}.xml`, result.xml);
 }
