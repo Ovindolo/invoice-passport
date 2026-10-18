@@ -183,8 +183,9 @@ deno task conformance  # XSD + official EN 16931 / Peppol schematron on every XM
   schematron.
 - RO e-Factura (CIUS-RO 1.0.1), accepted by ANAF's validator.
 - Signatures: ES256 only.
-- Credit notes (type 381, with the credited invoice) for Peppol BIS, XRechnung and CII / Factur-X.
-- Planned: PINT and RO e-Factura credit notes, more national formats, key rotation guidance.
+- Credit notes (type 381, with the credited invoice) for Peppol BIS, XRechnung, CII / Factur-X, PINT AE (with the UAE
+  credit reason code) and PINT SG.
+- Planned: RO e-Factura CreditNote (storno invoices work today), more national formats, key rotation guidance.
 
 ## Origin
 

@@ -29,16 +29,18 @@ with PySaxonProcessor(license=False) as proc:
     if os.path.exists(cii):
         executables["CEN-EN16931-CII"] = xslt.compile_stylesheet(stylesheet_file=cii)
     for juris in ("ae", "sg"):
-        base = os.path.join(cache, f"pint-{juris}", "trn-invoice", "schematron")
-        for part, label in (("PINT-UBL-validation-preprocessed", "PINT"), ("PINT-jurisdiction-aligned-rules", "jurisdiction")):
-            path = os.path.join(base, part + ".xslt")
-            if os.path.exists(path):
-                executables[f"PINT-{juris.upper()}-{label}"] = xslt.compile_stylesheet(stylesheet_file=path)
+        for trn, suffix in (("trn-invoice", ""), ("trn-creditnote", "-CN")):
+            base = os.path.join(cache, f"pint-{juris}", trn, "schematron")
+            for part, label in (("PINT-UBL-validation-preprocessed", "PINT"), ("PINT-jurisdiction-aligned-rules", "jurisdiction")):
+                path = os.path.join(base, part + ".xslt")
+                if os.path.exists(path):
+                    executables[f"PINT-{juris.upper()}-{label}{suffix}"] = xslt.compile_stylesheet(stylesheet_file=path)
     for f in files:
         name = os.path.basename(f)
         if name.startswith("pint-ae-") or name.startswith("pint-sg-"):
             j = name[5:7].upper()
-            rule_sets = [f"PINT-{j}-PINT", f"PINT-{j}-jurisdiction"]
+            cn = "-CN" if "<CreditNote " in open(f, encoding="utf-8").read() else ""
+            rule_sets = [f"PINT-{j}-PINT{cn}", f"PINT-{j}-jurisdiction{cn}"]
         elif name.startswith("cii-"):
             rule_sets = ["CEN-EN16931-CII"]
         else:

@@ -1,0 +1,56 @@
+{
+  "jurisdiction": "sg",
+  "number": "LC-CN-2026-001",
+  "uuid": "4d5e6f70-8a9b-4c0d-9e1f-3a4b5c6d7e8f",
+  "issueDate": "2026-10-25",
+  "currency": "SGD",
+  "buyerReference": "MR-PO-118",
+  "seller": {
+    "name": "Lion City Software Pte. Ltd.",
+    "taxId": "201912345K",
+    "legalId": {
+      "id": "201912345K"
+    },
+    "street": "1 Raffles Place",
+    "city": "Singapore",
+    "postalCode": "048616",
+    "country": "SG",
+    "contact": {
+      "name": "Wei Ling Tan",
+      "email": "ar@lioncity.example"
+    }
+  },
+  "buyer": {
+    "name": "Merlion Retail Pte. Ltd.",
+    "taxId": "200512345D",
+    "legalId": {
+      "id": "200512345D"
+    },
+    "street": "10 Orchard Road",
+    "city": "Singapore",
+    "postalCode": "238826",
+    "country": "SG"
+  },
+  "lines": [
+    {
+      "name": "SaaS subscription October",
+      "quantity": 1,
+      "unitPrice": 800,
+      "taxCategory": "SR",
+      "taxRate": 9
+    },
+    {
+      "name": "Onboarding",
+      "quantity": 1,
+      "unitPrice": 150,
+      "taxCategory": "SR",
+      "taxRate": 9
+    }
+  ],
+  "documentType": "credit-note",
+  "precedingInvoice": {
+    "number": "LC-2026-0042",
+    "issueDate": "2026-10-18"
+  },
+  "paymentTerms": "Credit applied to the next invoice"
+}

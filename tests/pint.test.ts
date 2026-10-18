@@ -65,3 +65,23 @@ Deno.test("Singapore: SGD totals for foreign currency, NG rules", async () => {
   const ng = buildPintInvoice({ ...input, lines: [{ ...input.lines[0], taxCategory: "NG", taxRate: 0 }] });
   assert(ng.problems.some((p) => p.includes("NG")), ng.problems.join("|"));
 });
+
+Deno.test("credit notes: CreditNote 381 with the credited invoice, and a reason code in the UAE", async () => {
+  const input = await load("pint-ae-credit-note-S");
+  const xml = buildPintInvoice(input).xml!;
+  for (
+    const needle of [
+      "<CreditNote ",
+      "<cbc:CreditNoteTypeCode>381",
+      "<cbc:ResponseCode>DL8.61.1.A",
+      "<cac:CreditNoteLine>",
+      "<cbc:ID>DL-2026-0101</cbc:ID>",
+    ]
+  ) {
+    assert(xml.includes(needle), needle);
+  }
+  const noReason = buildPintInvoice({ ...input, creditReason: null });
+  assert(noReason.problems.some((p) => p.includes("reason code")), noReason.problems.join("|"));
+  const noInvoice = buildPintInvoice({ ...input, precedingInvoice: null });
+  assert(noInvoice.problems.some((p) => p.includes("credits")), noInvoice.problems.join("|"));
+});

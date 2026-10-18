@@ -54,8 +54,16 @@ export interface PintLine {
   exemptionCode?: string | null;
 }
 
+/** UAE credit note reasons (BTAE-03, PINT AE CreditReason code list). */
+export const AE_CREDIT_REASONS = ["DL8.61.1.A", "DL8.61.1.B", "DL8.61.1.C", "DL8.61.1.D", "DL8.61.1.E", "VD"];
+
 export interface PintInvoiceInput {
   jurisdiction: PintJurisdiction;
+  /** "credit-note" emits a UBL CreditNote (381) that credits `precedingInvoice` */
+  documentType?: "invoice" | "credit-note";
+  precedingInvoice?: { number: string; issueDate?: string | null } | null;
+  /** UAE credit notes: reason code from AE_CREDIT_REASONS (e.g. DL8.61.1.A cancelled supply) */
+  creditReason?: string | null;
   number: string;
   /** RFC 4122 UUID identifying the invoice */
   uuid: string;
@@ -117,6 +125,13 @@ export function buildPintInvoice(input: PintInvoiceInput): PintResult {
   const buyer = { ...input.buyer, endpoint: input.buyer.endpoint ?? pintEndpoint(input.jurisdiction, input.buyer) };
   const exportSale = ae && buyer.country !== "AE";
   const txType = input.transactionType ?? (exportSale ? "00000001" : "00000000");
+  const credit = input.documentType === "credit-note";
+  if (credit && !input.precedingInvoice?.number?.trim()) {
+    problems.push("A credit note must name the invoice it credits.");
+  }
+  if (credit && ae && !AE_CREDIT_REASONS.includes(input.creditReason ?? "")) {
+    problems.push(`UAE credit notes need a reason code: ${AE_CREDIT_REASONS.join(", ")}.`);
+  }
 
   if (!/^[A-Z]{3}$/.test(currency) || /^(USDT|USDC|USDG)$/.test(currency)) {
     problems.push(`Currency ${currency} is not an ISO 4217 code; price stablecoin invoices in USD.`);
@@ -164,7 +179,7 @@ export function buildPintInvoice(input: PintInvoiceInput): PintResult {
     if (buyer.country === "AE" && buyer.legalId?.id && !buyer.legalId.type) {
       problems.push("Give the type of the buyer's legal registration identifier.");
     }
-    if (!input.dueDate) problems.push("A payment due date is required.");
+    if (!input.dueDate && !credit) problems.push("A payment due date is required.");
     if (exportSale && (!buyer.street || !buyer.city || !buyer.subdivision)) {
       problems.push("Exports need the buyer street, city and region (used as the delivery address).");
     }
@@ -295,24 +310,46 @@ ${indent}  <cbc:ID>${scheme}</cbc:ID>
 ${indent}</cac:TaxScheme>`;
 
   const p = input.payment;
+  const root = credit ? "CreditNote" : "Invoice";
+  const lineTag = credit ? "CreditNoteLine" : "InvoiceLine";
+  const qtyTag = credit ? "CreditedQuantity" : "InvoicedQuantity";
+  const pre = input.precedingInvoice;
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
+<${root} xmlns="urn:oasis:names:specification:ubl:schema:xsd:${root}-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
   <cbc:CustomizationID>${ae ? PINT_AE : PINT_SG}</cbc:CustomizationID>
   <cbc:ProfileID>${PINT_BILLING}</cbc:ProfileID>${
     ae ? `\n  <cbc:ProfileExecutionID>${txType}</cbc:ProfileExecutionID>` : ""
   }
   <cbc:ID>${esc(input.number)}</cbc:ID>
   <cbc:UUID>${input.uuid.toLowerCase()}</cbc:UUID>
-  <cbc:IssueDate>${input.issueDate}</cbc:IssueDate>${el("  ", "cbc:DueDate", input.dueDate)}
-  <cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>${el("  ", "cbc:Note", input.note)}
+  <cbc:IssueDate>${input.issueDate}</cbc:IssueDate>${credit ? "" : el("  ", "cbc:DueDate", input.dueDate)}
+  <cbc:${credit ? "CreditNoteTypeCode" : "InvoiceTypeCode"}>${credit ? 381 : 380}</cbc:${
+    credit ? "CreditNoteTypeCode" : "InvoiceTypeCode"
+  }>${el("  ", "cbc:Note", input.note)}
   <cbc:DocumentCurrencyCode>${currency}</cbc:DocumentCurrencyCode>${
     rate ? `\n  <cbc:TaxCurrencyCode>${local}</cbc:TaxCurrencyCode>` : ""
   }${el("  ", "cbc:BuyerReference", input.buyerReference)}${
+    credit && ae
+      ? `
+  <cac:DiscrepancyResponse>
+    <cbc:ResponseCode>${esc(input.creditReason!)}</cbc:ResponseCode>
+  </cac:DiscrepancyResponse>`
+      : ""
+  }${
     input.orderReference
       ? `
   <cac:OrderReference>
     <cbc:ID>${esc(input.orderReference)}</cbc:ID>
   </cac:OrderReference>`
+      : ""
+  }${
+    pre?.number
+      ? `
+  <cac:BillingReference>
+    <cac:InvoiceDocumentReference>
+      <cbc:ID>${esc(pre.number)}</cbc:ID>${el("      ", "cbc:IssueDate", pre.issueDate)}
+    </cac:InvoiceDocumentReference>
+  </cac:BillingReference>`
       : ""
   }${
     ae && rate
@@ -370,7 +407,7 @@ ${indent}</cac:TaxScheme>`;
       }
     </cac:PayeeFinancialAccount>
   </cac:PaymentMeans>`
-      : ae
+      : ae && !credit
       ? `
   <cac:PaymentMeans>
     <cbc:PaymentMeansCode name="Instrument not defined">1</cbc:PaymentMeansCode>
@@ -419,9 +456,9 @@ ${taxCategory("        ", g.category, g.rate, lines.find((l) => l.taxCategory ==
     <cbc:PayableAmount currencyID="${currency}">${money(gross)}</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>${
     lines.map((l) => `
-  <cac:InvoiceLine>
+  <cac:${lineTag}>
     <cbc:ID>${l.id}</cbc:ID>
-    <cbc:InvoicedQuantity unitCode="${esc(l.unitCode ?? "C62")}">${l.quantity}</cbc:InvoicedQuantity>
+    <cbc:${qtyTag} unitCode="${esc(l.unitCode ?? "C62")}">${l.quantity}</cbc:${qtyTag}>
     <cbc:LineExtensionAmount currencyID="${currency}">${money(l.net)}</cbc:LineExtensionAmount>
     <cac:Item>${ae ? el("      ", "cbc:Description", l.description ?? l.name) : ""}
       <cbc:Name>${esc(l.name.slice(0, 100))}</cbc:Name>${
@@ -470,9 +507,9 @@ ${taxCategory("        ", l.taxCategory, l.taxRate)}
     </cac:ItemPriceExtension>`
         : ""
     }
-  </cac:InvoiceLine>`).join("")
+  </cac:${lineTag}>`).join("")
   }
-</Invoice>
+</${root}>
 `;
   return { xml, problems: [] };
 }

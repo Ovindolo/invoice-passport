@@ -1,0 +1,56 @@
+{
+  "jurisdiction": "ae",
+  "number": "DL-CN-2026-001",
+  "uuid": "8d2e4f60-1a3b-4c5d-8e7f-a1b2c3d4e5f6",
+  "issueDate": "2026-10-25",
+  "currency": "AED",
+  "seller": {
+    "name": "Desert Labs FZ-LLC",
+    "taxId": "100123456700003",
+    "legalId": {
+      "id": "1234567",
+      "type": "TL",
+      "authority": "Dubai Economy and Tourism"
+    },
+    "street": "Sheikh Zayed Road 1",
+    "city": "Dubai",
+    "subdivision": "DXB",
+    "country": "AE",
+    "contact": {
+      "name": "Layla Haddad",
+      "email": "billing@desertlabs.example"
+    }
+  },
+  "buyer": {
+    "name": "Falcon Trading LLC",
+    "taxId": "100987654300003",
+    "legalId": {
+      "id": "7654321",
+      "type": "TL",
+      "authority": "Abu Dhabi Department of Economic Development"
+    },
+    "street": "Corniche Road 5",
+    "city": "Abu Dhabi",
+    "subdivision": "AUH",
+    "country": "AE"
+  },
+  "lines": [
+    {
+      "name": "API usage October",
+      "description": "Metered API access, October 2026",
+      "quantity": 1,
+      "unitPrice": 1200,
+      "taxCategory": "S",
+      "taxRate": 5,
+      "itemType": "S",
+      "serviceCode": "998314"
+    }
+  ],
+  "documentType": "credit-note",
+  "precedingInvoice": {
+    "number": "DL-2026-0101",
+    "issueDate": "2026-10-18"
+  },
+  "creditReason": "DL8.61.1.A",
+  "paymentTerms": "Refund to the original account within 14 days"
+}
