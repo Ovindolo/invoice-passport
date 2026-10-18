@@ -1,4 +1,4 @@
-"""Runs the CEN EN 16931 UBL rules on every invoice, the OpenPeppol rules on peppol-* invoices and the
+"""Runs the CEN EN 16931 rules on every invoice (UBL, or CII for cii-*), the OpenPeppol rules on peppol-* invoices and the
 KoSIT XRechnung rules on xrechnung-* invoices."""
 import os
 import re
@@ -25,10 +25,16 @@ with PySaxonProcessor(license=False) as proc:
     xr = os.path.join(cache, "xrechnung", "schematron", "ubl", "XRechnung-UBL-validation.xsl")
     if os.path.exists(xr):
         executables["XRechnung-UBL"] = xslt.compile_stylesheet(stylesheet_file=xr)
+    cii = os.path.join(cache, "cii", "xslt", "EN16931-CII-validation.xslt")
+    if os.path.exists(cii):
+        executables["CEN-EN16931-CII"] = xslt.compile_stylesheet(stylesheet_file=cii)
     for f in files:
         name = os.path.basename(f)
-        rule_sets = ["CEN-EN16931-UBL"] + (["PEPPOL-EN16931-UBL"] if name.startswith("peppol-") else []) + (
-            ["XRechnung-UBL"] if name.startswith("xrechnung-") else [])
+        if name.startswith("cii-"):
+            rule_sets = ["CEN-EN16931-CII"]
+        else:
+            rule_sets = ["CEN-EN16931-UBL"] + (["PEPPOL-EN16931-UBL"] if name.startswith("peppol-") else []) + (
+                ["XRechnung-UBL"] if name.startswith("xrechnung-") else [])
         for rules in rule_sets:
             svrl = executables[rules].transform_to_string(source_file=os.path.abspath(f))
             asserts = re.findall(r"<svrl:failed-assert(.*?)</svrl:failed-assert>", svrl, re.S)

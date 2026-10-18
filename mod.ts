@@ -16,3 +16,5 @@ export * from "./src/onchain.ts";
 export * from "./src/unvtd.ts";
 export * from "./src/ecb.ts";
 export * from "./src/jurisdictions.ts";
+export * from "./src/cii.ts";
+export * from "./src/facturx.ts";

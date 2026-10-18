@@ -1,0 +1,29 @@
+{
+  "number": "MR-2026-10-0007",
+  "issueDate": "2026-10-31",
+  "currency": "USD",
+  "buyerReference": "0x9f2c41d07a2b1e5c3d8a6f4b2e1d0c9b8a7f6e5d",
+  "note": "Consolidated invoice for x402 API payments in USDC on Base (eip155:8453), October 2026.",
+  "seller": {
+    "name": "Billify Demo SRL",
+    "vatId": "RO12345674",
+    "street": "Strada Exemplu 1",
+    "city": "Cluj-Napoca",
+    "postalCode": "400001",
+    "country": "RO"
+  },
+  "buyer": {
+    "name": "Agent Labs GmbH",
+    "vatId": "DE811907980",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "DE"
+  },
+  "lines": [
+    { "description": "API call /v1/quote (x402)", "quantity": 1, "unitPrice": 0.25, "vatCategory": "AE", "vatRate": 0, "note": "tx 0x5e1f8c2a9b7d4e3f6a1c0b9d8e7f6a5b4c3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f" },
+    { "description": "API call /v1/quote (x402)", "quantity": 1, "unitPrice": 0.25, "vatCategory": "AE", "vatRate": 0, "note": "tx 0x7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b" },
+    { "description": "API call /v1/report (x402)", "quantity": 1, "unitPrice": 1.5, "vatCategory": "AE", "vatRate": 0, "note": "tx 0x1f2e3d4c5b6a79880a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6071" }
+  ],
+  "paymentTerms": "Paid on-chain in USDC at the time of each call.",
+  "taxCurrency": { "code": "RON", "rate": 4.4012 }
+}

@@ -5,6 +5,7 @@
  */
 import { buildUblInvoice, type UblInvoiceInput } from "../src/ubl.ts";
 import { buildPeppolInvoice, type PeppolInvoiceInput } from "../src/peppol.ts";
+import { buildCiiInvoice, type CiiInvoiceInput } from "../src/cii.ts";
 import { didWebDocument, paymentConfirmationFromPassport, signCredential } from "../src/unvtd.ts";
 import { generateSigningKey, loadSigningKey } from "../src/jws.ts";
 import { buildPassport, CIUS_RO_FORMAT, eInvoiceReference, type PassportInput, signPassport } from "../mod.ts";
@@ -37,6 +38,15 @@ for await (const entry of Deno.readDir(dir)) {
   const result = buildPeppolInvoice(JSON.parse(await read(entry.name)) as PeppolInvoiceInput, profile);
   if (!result.xml) throw new Error(`${m[1]}: ${result.problems.join("; ")}`);
   await write(`${m[1]}.xml`, result.xml);
+}
+
+// CII (Factur-X EN 16931 profile): its own inputs, plus every Peppol input in CII syntax.
+for await (const entry of Deno.readDir(dir)) {
+  const m = entry.name.match(/^((cii|peppol)-.+)\.input\.json$/);
+  if (!m) continue;
+  const result = buildCiiInvoice(JSON.parse(await read(entry.name)) as CiiInvoiceInput);
+  if (!result.xml) throw new Error(`${m[1]} (CII): ${result.problems.join("; ")}`);
+  await write(`${m[1].startsWith("cii-") ? m[1] : `cii-${m[1]}`}.xml`, result.xml);
 }
 
 const input = JSON.parse(await read("sample-input.json")) as PassportInput;

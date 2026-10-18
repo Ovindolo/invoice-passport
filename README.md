@@ -26,13 +26,16 @@ The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 
 | `src/unvtd.ts`     | UN/CEFACT UNVTD PaymentConfirmation credentials (W3C VC, vc+jwt) and did:web resolution                                                           |
 | `src/onchain.ts`   | Direct stablecoin payments (USDC/USDT on Base, Ethereum, BNB Chain; USDG on Robinhood Chain): unique pay amounts, Transfer log decoding, matching |
 | `src/xml.ts`       | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                                                                |
-| `src/peppol.ts`    | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931): VAT categories S, Z, E, AE, K, G, O                                                        |
+| `src/peppol.ts`    | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931) and XRechnung 3.0: VAT categories S, Z, E, AE, K, G, O                                      |
+| `src/cii.ts`       | UN/CEFACT CII D16B invoice (EN 16931), French BR-FR notes and 0225 addresses                                                                      |
+| `src/facturx.ts`   | Factur-X / ZUGFeRD: CII embedded in a PDF/A-3b with the Factur-X XMP schema                                                                       |
+| `src/jurisdictions.ts` | Invoicing rules per jurisdiction (EU, UAE, Singapore, Panama, UK, CH, offshore hubs) and compliance findings                                  |
 | `src/ubl.ts`       | UBL 2.1 invoice for RO e-Factura (CIUS-RO 1.0.1), VAT categories S and O, with CUI checks                                                         |
 | `src/ecb.ts`       | ECB euro reference rates (≈30 currencies), on-or-before lookups and cross rates                                                                   |
 | `src/bnr.ts`       | National Bank of Romania reference rates, and the "last fixing before the operation date" rule                                                    |
 | `cli/verify.ts`    | Command-line verifier                                                                                                                             |
 | `web/`             | Browser verifier page (`web/index.html`) and the bundled library                                                                                  |
-| `conformance/`     | Checks every XML vector against the UBL 2.1 XSD and the official CEN EN 16931 and OpenPeppol schematron                                           |
+| `conformance/`     | XSD + official CEN (UBL, CII), OpenPeppol and KoSIT schematron on every vector; veraPDF + Mustang on Factur-X PDFs                                |
 | `vectors/`         | Test vectors: passport, JWS, JWKS, RO e-Factura invoices accepted by ANAF, Peppol BIS 3.0 invoices                                                |
 
 ## Usage
@@ -120,6 +123,8 @@ deno task conformance  # XSD + official EN 16931 / Peppol schematron on every XM
 - RO e-Factura (CIUS-RO 1.0.1) for Romanian buyers, VAT categories S and O, accepted by ANAF's validator.
 - Peppol BIS Billing 3.0 for EU invoicing: VAT categories S, Z, E, AE, K, G, O, mixed rates, RF payment reference, tax
   currency, and the fatal national rules for DE, IT and NL sellers.
+- XRechnung 3.0 (Germany) and Factur-X EN 16931 (France, Germany): PDF/A-3b validated with veraPDF and Mustang,
+  including the French reform rules (BR-FR).
 - Signatures: ES256 only.
 - Stablecoin payments to the seller's own wallet, matched by a unique pay amount per invoice.
 - Bank reconciliation: camt.052/053/054 import and matching by RF reference, invoice number + amount, or amount.
