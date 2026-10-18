@@ -34,39 +34,40 @@ Apache-2.0.
 
 ## What is included
 
-| Module                 |                                                                                                                 |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Invoices**           |                                                                                                                 |
-| `src/peppol.ts`        | UBL 2.1 invoices and credit notes for Peppol BIS Billing 3.0 (EU) and XRechnung 3.0 (Germany), with attachments |
-| `src/cii.ts`           | UN/CEFACT CII D16B (EN 16931), with the French reform notes and 0225 addresses                                  |
-| `src/facturx.ts`       | Factur-X / ZUGFeRD: the CII XML inside a PDF/A-3b, with supplements such as a transaction annex                 |
-| `src/pint.ts`          | Peppol PINT AE 1.0.4 (UAE mandate) and PINT SG 1.4.1 (Singapore InvoiceNow)                                     |
-| `src/ubl.ts`           | RO e-Factura (CIUS-RO 1.0.1) with CUI checks                                                                    |
-| `src/jurisdictions.ts` | Invoicing rules per jurisdiction and compliance findings for a seller or an invoice                             |
-| **Payments**           |                                                                                                                 |
-| `src/mpp.ts`           | Machine Payments Protocol (HTTP `Payment` auth): HMAC-bound challenges, credentials, evm charge, receipts       |
-| `src/onchain.ts`       | Stablecoin payments to the seller's wallet: unique pay amounts, Transfer log decoding, matching                 |
-| `src/camt.ts`          | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                                 |
-| `src/reconcile.ts`     | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                             |
-| `src/sepa.ts`          | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                                       |
-| `src/settlement.ts`    | InvoiceSettlement contract helpers: invoice references, `pay`/`approve` calldata, `InvoicePaid` decoding        |
-| `contracts/`           | InvoiceSettlement.sol: pay an invoice in a stablecoin, payer → seller, with an on-chain invoice reference       |
-| **Proof**              |                                                                                                                 |
-| `src/passport.ts`      | Build, sign and verify Invoice Passports                                                                        |
-| `src/jws.ts`           | ES256 compact JWS: load / generate keys, sign, verify, verify against a JWKS                                    |
-| `src/unvtd.ts`         | UN/CEFACT UNVTD PaymentConfirmation credentials (W3C VC, vc+jwt) and did:web resolution                         |
-| `src/canonical.ts`     | Canonical JSON and SHA-256                                                                                      |
-| **Rates and privacy**  |                                                                                                                 |
-| `src/taxfx.ts`         | The rate each jurisdiction accepts for tax in local currency (BNR, ECB, HMRC, CBUAE peg)                        |
-| `src/ecb.ts`           | ECB euro reference rates (≈30 currencies), on-or-before lookups and cross rates                                 |
-| `src/bnr.ts`           | National Bank of Romania rates and the "last fixing before the operation date" rule                             |
-| `src/anyone.ts`        | Optional private transport through a local Anyone client (SOCKS5h): no IP or DNS leak                           |
-| `src/xml.ts`           | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                              |
-| **Tools**              |                                                                                                                 |
-| `cli/verify.ts`        | Command-line verifier (`--anyone` for private fetching)                                                         |
-| `web/`                 | Browser verifier page (`web/index.html`) and the bundled library                                                |
-| `conformance/`         | XSD + official CEN, OpenPeppol, KoSIT and PINT schematron on every vector; veraPDF + Mustang on Factur-X PDFs   |
-| `vectors/`             | Test vectors for every format, passports, JWS, bank statements and on-chain logs                                |
+| Module                  |                                                                                                                 |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Invoices**            |                                                                                                                 |
+| `src/peppol.ts`         | UBL 2.1 invoices and credit notes for Peppol BIS Billing 3.0 (EU) and XRechnung 3.0 (Germany), with attachments |
+| `src/cii.ts`            | UN/CEFACT CII D16B (EN 16931), with the French reform notes and 0225 addresses                                  |
+| `src/facturx.ts`        | Factur-X / ZUGFeRD: the CII XML inside a PDF/A-3b, with supplements such as a transaction annex                 |
+| `src/pint.ts`           | Peppol PINT AE 1.0.4 (UAE mandate) and PINT SG 1.4.1 (Singapore InvoiceNow)                                     |
+| `src/ubl.ts`            | RO e-Factura (CIUS-RO 1.0.1) with CUI checks                                                                    |
+| `src/jurisdictions.ts`  | Invoicing rules per jurisdiction and compliance findings for a seller or an invoice                             |
+| `src/accounting-csv.ts` | Import files for Xero (sales invoices and credit notes) and QuickBooks Online (invoices)                        |
+| **Payments**            |                                                                                                                 |
+| `src/mpp.ts`            | Machine Payments Protocol (HTTP `Payment` auth): HMAC-bound challenges, credentials, evm charge, receipts       |
+| `src/onchain.ts`        | Stablecoin payments to the seller's wallet: unique pay amounts, Transfer log decoding, matching                 |
+| `src/camt.ts`           | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                                 |
+| `src/reconcile.ts`      | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                             |
+| `src/sepa.ts`           | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                                       |
+| `src/settlement.ts`     | InvoiceSettlement contract helpers: invoice references, `pay`/`approve` calldata, `InvoicePaid` decoding        |
+| `contracts/`            | InvoiceSettlement.sol: pay an invoice in a stablecoin, payer → seller, with an on-chain invoice reference       |
+| **Proof**               |                                                                                                                 |
+| `src/passport.ts`       | Build, sign and verify Invoice Passports                                                                        |
+| `src/jws.ts`            | ES256 compact JWS: load / generate keys, sign, verify, verify against a JWKS                                    |
+| `src/unvtd.ts`          | UN/CEFACT UNVTD PaymentConfirmation credentials (W3C VC, vc+jwt) and did:web resolution                         |
+| `src/canonical.ts`      | Canonical JSON and SHA-256                                                                                      |
+| **Rates and privacy**   |                                                                                                                 |
+| `src/taxfx.ts`          | The rate each jurisdiction accepts for tax in local currency (BNR, ECB, HMRC, CBUAE peg)                        |
+| `src/ecb.ts`            | ECB euro reference rates (≈30 currencies), on-or-before lookups and cross rates                                 |
+| `src/bnr.ts`            | National Bank of Romania rates and the "last fixing before the operation date" rule                             |
+| `src/anyone.ts`         | Optional private transport through a local Anyone client (SOCKS5h): no IP or DNS leak                           |
+| `src/xml.ts`            | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                              |
+| **Tools**               |                                                                                                                 |
+| `cli/verify.ts`         | Command-line verifier (`--anyone` for private fetching)                                                         |
+| `web/`                  | Browser verifier page (`web/index.html`) and the bundled library                                                |
+| `conformance/`          | XSD + official CEN, OpenPeppol, KoSIT and PINT schematron on every vector; veraPDF + Mustang on Factur-X PDFs   |
+| `vectors/`              | Test vectors for every format, passports, JWS, bank statements and on-chain logs                                |
 
 ## Usage
 
