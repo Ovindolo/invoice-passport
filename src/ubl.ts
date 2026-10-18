@@ -139,7 +139,10 @@ export function countryCode(value: string | null): string | null {
 
 export function countyFor(party: UblParty): string | null {
   if (party.county && /^RO-[A-Z]{1,2}$/.test(party.county)) return party.county;
-  return party.city ? CITY_COUNTY[fold(party.city)] ?? null : null;
+  if (!party.city) return null;
+  const city = fold(party.city).replace(/^(mun\.?|municipiul|oras\.?|orasul|comuna|com\.?)\s+/, "");
+  if (/\bbucuresti\b|\bbucharest\b/.test(city)) return "RO-B";
+  return CITY_COUNTY[city] ?? null;
 }
 
 /** Bucharest addresses must use SECTOR1…SECTOR6 as the city (BR-RO-100). */
