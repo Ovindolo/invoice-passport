@@ -27,6 +27,7 @@ The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 
 | `src/onchain.ts`       | Direct stablecoin payments (USDC/USDT on Base, Ethereum, BNB Chain; USDG on Robinhood Chain): unique pay amounts, Transfer log decoding, matching |
 | `src/xml.ts`           | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                                                                |
 | `src/peppol.ts`        | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931) and XRechnung 3.0: VAT categories S, Z, E, AE, K, G, O                                      |
+| `src/anyone.ts`        | Optional private transport: fetch through a local Anyone client (SOCKS5h), no IP or DNS leak                                                      |
 | `src/mpp.ts`           | Machine Payments Protocol (HTTP `Payment` auth): HMAC-bound challenges, credentials, evm charge, receipts                                         |
 | `src/pint.ts`          | Peppol PINT AE 1.0.4 (UAE mandate) and PINT SG 1.4.1 (Singapore InvoiceNow) invoices                                                              |
 | `src/cii.ts`           | UN/CEFACT CII D16B invoice (EN 16931), French BR-FR notes and 0225 addresses                                                                      |
@@ -102,6 +103,19 @@ deno task verify passport.jws --jwks https://issuer.example/.well-known/jwks.jso
 
 `examples/robinhood-usdg-pay-invoice.ts` sends the exact amount shown on an invoice in USDG on Robinhood Chain (chain
 id 4663) with your own key, read from the environment for that run only.
+
+## Private requests over Anyone (optional)
+
+Agents and auditors can fetch passports, keys and invoices without revealing their IP address, through a local
+[Anyone](https://anyone.io) client (SOCKS5h on port 9050, DNS resolved by the network):
+
+```sh
+npx @anyone-protocol/anyone-client          # starts the client
+deno run --allow-read --allow-net cli/verify.ts <passport-url> --jwks <jwks-url> --anyone
+```
+
+In code, `anyoneFetch()` returns a `fetch` that goes through the client, and `anyoneReachable()` tells whether one is
+running. Billify itself does not need it; it is the caller's choice.
 
 ## Browser verifier
 
