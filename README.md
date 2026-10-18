@@ -15,28 +15,28 @@ The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 
 
 ## What is included
 
-| Module             |                                                                                                                                                   |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/canonical.ts` | Canonical JSON and SHA-256                                                                                                                        |
-| `src/jws.ts`       | ES256 compact JWS: load / generate keys, sign, verify, verify against a JWKS                                                                      |
-| `src/passport.ts`  | Build, sign and verify Invoice Passports                                                                                                          |
-| `src/sepa.ts`      | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                                                                         |
-| `src/camt.ts`      | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                                                                   |
-| `src/reconcile.ts` | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                                                               |
-| `src/unvtd.ts`     | UN/CEFACT UNVTD PaymentConfirmation credentials (W3C VC, vc+jwt) and did:web resolution                                                           |
-| `src/onchain.ts`   | Direct stablecoin payments (USDC/USDT on Base, Ethereum, BNB Chain; USDG on Robinhood Chain): unique pay amounts, Transfer log decoding, matching |
-| `src/xml.ts`       | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                                                                |
-| `src/peppol.ts`    | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931) and XRechnung 3.0: VAT categories S, Z, E, AE, K, G, O                                      |
-| `src/cii.ts`       | UN/CEFACT CII D16B invoice (EN 16931), French BR-FR notes and 0225 addresses                                                                      |
-| `src/facturx.ts`   | Factur-X / ZUGFeRD: CII embedded in a PDF/A-3b with the Factur-X XMP schema                                                                       |
-| `src/jurisdictions.ts` | Invoicing rules per jurisdiction (EU, UAE, Singapore, Panama, UK, CH, offshore hubs) and compliance findings                                  |
-| `src/ubl.ts`       | UBL 2.1 invoice for RO e-Factura (CIUS-RO 1.0.1), VAT categories S and O, with CUI checks                                                         |
-| `src/ecb.ts`       | ECB euro reference rates (≈30 currencies), on-or-before lookups and cross rates                                                                   |
-| `src/bnr.ts`       | National Bank of Romania reference rates, and the "last fixing before the operation date" rule                                                    |
-| `cli/verify.ts`    | Command-line verifier                                                                                                                             |
-| `web/`             | Browser verifier page (`web/index.html`) and the bundled library                                                                                  |
-| `conformance/`     | XSD + official CEN (UBL, CII), OpenPeppol and KoSIT schematron on every vector; veraPDF + Mustang on Factur-X PDFs                                |
-| `vectors/`         | Test vectors: passport, JWS, JWKS, RO e-Factura invoices accepted by ANAF, Peppol BIS 3.0 invoices                                                |
+| Module                 |                                                                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/canonical.ts`     | Canonical JSON and SHA-256                                                                                                                        |
+| `src/jws.ts`           | ES256 compact JWS: load / generate keys, sign, verify, verify against a JWKS                                                                      |
+| `src/passport.ts`      | Build, sign and verify Invoice Passports                                                                                                          |
+| `src/sepa.ts`          | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                                                                         |
+| `src/camt.ts`          | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                                                                   |
+| `src/reconcile.ts`     | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                                                               |
+| `src/unvtd.ts`         | UN/CEFACT UNVTD PaymentConfirmation credentials (W3C VC, vc+jwt) and did:web resolution                                                           |
+| `src/onchain.ts`       | Direct stablecoin payments (USDC/USDT on Base, Ethereum, BNB Chain; USDG on Robinhood Chain): unique pay amounts, Transfer log decoding, matching |
+| `src/xml.ts`           | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                                                                |
+| `src/peppol.ts`        | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931) and XRechnung 3.0: VAT categories S, Z, E, AE, K, G, O                                      |
+| `src/cii.ts`           | UN/CEFACT CII D16B invoice (EN 16931), French BR-FR notes and 0225 addresses                                                                      |
+| `src/facturx.ts`       | Factur-X / ZUGFeRD: CII embedded in a PDF/A-3b with the Factur-X XMP schema                                                                       |
+| `src/jurisdictions.ts` | Invoicing rules per jurisdiction (EU, UAE, Singapore, Panama, UK, CH, offshore hubs) and compliance findings                                      |
+| `src/ubl.ts`           | UBL 2.1 invoice for RO e-Factura (CIUS-RO 1.0.1), VAT categories S and O, with CUI checks                                                         |
+| `src/ecb.ts`           | ECB euro reference rates (≈30 currencies), on-or-before lookups and cross rates                                                                   |
+| `src/bnr.ts`           | National Bank of Romania reference rates, and the "last fixing before the operation date" rule                                                    |
+| `cli/verify.ts`        | Command-line verifier                                                                                                                             |
+| `web/`                 | Browser verifier page (`web/index.html`) and the bundled library                                                                                  |
+| `conformance/`         | XSD + official CEN (UBL, CII), OpenPeppol and KoSIT schematron on every vector; veraPDF + Mustang on Factur-X PDFs                                |
+| `vectors/`             | Test vectors: passport, JWS, JWKS, RO e-Factura invoices accepted by ANAF, Peppol BIS 3.0 invoices                                                |
 
 ## Usage
 
