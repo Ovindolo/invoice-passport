@@ -4,7 +4,7 @@
   "license": "Apache-2.0",
   "exports": "./mod.ts",
   "tasks": {
-    "test": "deno test --no-lock --allow-read",
+    "test": "deno test --no-lock --allow-read --allow-net=127.0.0.1,localhost",
     "check": "deno check mod.ts cli/verify.ts scripts/gen-vectors.ts",
     "vectors": "deno run --allow-read --allow-write scripts/gen-vectors.ts",
     "verify": "deno run --allow-read --allow-net cli/verify.ts",
