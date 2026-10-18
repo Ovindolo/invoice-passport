@@ -49,6 +49,8 @@ Apache-2.0.
 | `src/camt.ts`          | ISO 20022 bank statements (camt.052 / 053 / 054) → transactions with references                                       |
 | `src/reconcile.ts`     | Matches incoming transfers to open invoices (RF reference, number + amount, amount)                                   |
 | `src/sepa.ts`          | RF creditor references (ISO 11649), IBAN checks, `bank_transfer` evidence                                             |
+| `src/settlement.ts`    | InvoiceSettlement contract helpers: invoice references, `pay`/`approve` calldata, `InvoicePaid` decoding              |
+| `contracts/`           | InvoiceSettlement.sol: pay an invoice in a stablecoin, payer → seller, with an on-chain invoice reference             |
 | **Proof**              |                                                                                                                       |
 | `src/passport.ts`      | Build, sign and verify Invoice Passports                                                                              |
 | `src/jws.ts`           | ES256 compact JWS: load / generate keys, sign, verify, verify against a JWKS                                          |

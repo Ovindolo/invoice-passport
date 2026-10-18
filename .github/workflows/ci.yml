@@ -24,3 +24,15 @@ jobs:
           python-version: "3.12"
       - run: sudo apt-get install -y libxml2-utils
       - run: ./conformance/run.sh
+
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: v1.8.5
+      - run: forge fmt --check
+        working-directory: contracts
+      - run: forge test -vv
+        working-directory: contracts
