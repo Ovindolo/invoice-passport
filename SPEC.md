@@ -4,9 +4,9 @@ Status: draft, open for comment. Identifier: `invoice-passport/0.1`.
 
 ## 1. Purpose
 
-European e-invoicing (EN 16931, UBL 2.1, national CIUS such as CIUS-RO, Peppol BIS Billing 3.0) describes the invoice.
-Payment standards (ISO 20022, SEPA, card networks, public blockchains) describe the payment. Nothing links the two in a
-verifiable, standard way, so reconciliation stays manual.
+E-invoicing (EN 16931, UBL 2.1, CII, Peppol BIS Billing 3.0 and PINT, national CIUS such as XRechnung or CIUS-RO)
+describes the invoice. Payment standards (ISO 20022, SEPA, card networks, public blockchains) describe the payment.
+Nothing links the two in a verifiable, standard way, so reconciliation stays manual.
 
 An **Invoice Passport** is a small JSON document, signed by the invoice issuer, that states:
 
