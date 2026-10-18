@@ -27,6 +27,7 @@ The library is TypeScript with no dependencies (WebCrypto only), for Deno, Node 
 | `src/onchain.ts`       | Direct stablecoin payments (USDC/USDT on Base, Ethereum, BNB Chain; USDG on Robinhood Chain): unique pay amounts, Transfer log decoding, matching |
 | `src/xml.ts`           | Small dependency-free XML reader (no DOCTYPE, no entity expansion)                                                                                |
 | `src/peppol.ts`        | UBL 2.1 invoice for Peppol BIS Billing 3.0 (EN 16931) and XRechnung 3.0: VAT categories S, Z, E, AE, K, G, O                                      |
+| `src/mpp.ts`           | Machine Payments Protocol (HTTP `Payment` auth): HMAC-bound challenges, credentials, evm charge, receipts                                         |
 | `src/pint.ts`          | Peppol PINT AE 1.0.4 (UAE mandate) and PINT SG 1.4.1 (Singapore InvoiceNow) invoices                                                              |
 | `src/cii.ts`           | UN/CEFACT CII D16B invoice (EN 16931), French BR-FR notes and 0225 addresses                                                                      |
 | `src/facturx.ts`       | Factur-X / ZUGFeRD: CII embedded in a PDF/A-3b with the Factur-X XMP schema                                                                       |
