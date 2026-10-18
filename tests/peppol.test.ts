@@ -1,4 +1,4 @@
-import { buildPeppolInvoice, peppolEndpointForVat, type PeppolInvoiceInput } from "../src/peppol.ts";
+import { buildPeppolInvoice, peppolEndpointForVat, type PeppolInvoiceInput, XRECHNUNG_3 } from "../src/peppol.ts";
 
 function assert(cond: unknown, msg: string) {
   if (!cond) throw new Error("ASSERT: " + msg);
@@ -82,5 +82,25 @@ Deno.test("endpoint suggestion from a VAT id uses the official EAS VAT schemes",
     peppolEndpointForVat("14399840") === null && peppolEndpointForVat("US123") === null &&
       peppolEndpointForVat(null) === null,
     "no prefix / unknown",
+  );
+});
+
+Deno.test("XRechnung profile: KoSIT identifier, BR-DE checks, vectors reproduced", async () => {
+  for (const name of ["xrechnung-de-de-S", "xrechnung-ro-de-AE"]) {
+    const r = buildPeppolInvoice(await input(name), "xrechnung");
+    assert(r.problems.length === 0 && r.xml === (await read(`${name}.xml`)), `${name}: ${r.problems.join("; ")}`);
+    assert(r.xml!.includes(`<cbc:CustomizationID>${XRECHNUNG_3}</cbc:CustomizationID>`), "XRechnung 3.0 id");
+  }
+  const base = await input("xrechnung-de-de-S");
+  const noContact = buildPeppolInvoice({
+    ...base,
+    seller: { ...base.seller, contact: { name: "Max", email: "a@b.de" } },
+  }, "xrechnung");
+  assert(noContact.problems.some((p) => p.includes("contact name, phone and email")), "BR-DE-2..7");
+  const noPostcode = buildPeppolInvoice({ ...base, buyer: { ...base.buyer, postalCode: null } }, "xrechnung");
+  assert(noPostcode.problems.some((p) => p.includes("buyer city and postal code")), "BR-DE-8/9");
+  assert(
+    buildPeppolInvoice({ ...base, seller: { ...base.seller, contact: null } }, "peppol").problems.length > 0,
+    "peppol keeps its own DE rule",
   );
 });

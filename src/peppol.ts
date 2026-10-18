@@ -10,6 +10,11 @@ import { isValidCreditorReference, isValidIban } from "./sepa.ts";
 
 export const PEPPOL_BIS_3 = "urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0";
 export const PEPPOL_BILLING_PROCESS = "urn:fdc:peppol.eu:2017:poacc:billing:01:1.0";
+/** XRechnung 3.0 CIUS (Germany, KoSIT), UBL syntax. */
+export const XRECHNUNG_3 = "urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0";
+
+/** "peppol": Peppol BIS Billing 3.0. "xrechnung": the German CIUS, which adds BR-DE rules. */
+export type InvoiceProfile = "peppol" | "xrechnung";
 
 export type VatCategory = "S" | "Z" | "E" | "AE" | "K" | "G" | "O";
 
@@ -198,7 +203,7 @@ function partyXml(tag: string, p: PeppolParty): string {
   </cac:${tag}>`;
 }
 
-export function buildPeppolInvoice(input: PeppolInvoiceInput): PeppolResult {
+export function buildPeppolInvoice(input: PeppolInvoiceInput, profile: InvoiceProfile = "peppol"): PeppolResult {
   const problems: string[] = [];
   const currency = input.currency.trim().toUpperCase();
   if (!/^[A-Z]{3}$/.test(currency) || currency === "USDT" || currency === "USDC" || currency === "USDG") {
@@ -266,6 +271,22 @@ export function buildPeppolInvoice(input: PeppolInvoiceInput): PeppolResult {
   if (from === "NL" && to === "NL" && !hasAddress(input.buyer)) {
     problems.push("Dutch domestic invoices need the buyer street, city and postal code.");
   }
+  if (profile === "xrechnung") {
+    // KoSIT BR-DE rules on top of EN 16931 (XRechnung 3.0).
+    const c = input.seller.contact;
+    if (!input.buyerReference?.trim()) {
+      problems.push("XRechnung needs a buyer reference (Leitweg-ID for public buyers).");
+    }
+    if (!c?.name || !c?.phone || !c?.email) problems.push("XRechnung needs the seller contact name, phone and email.");
+    if (c?.phone && (c.phone.match(/\d/g) ?? []).length < 3) {
+      problems.push("The seller phone needs at least three digits.");
+    }
+    if (!input.seller.city || !input.seller.postalCode) {
+      problems.push("XRechnung needs the seller city and postal code.");
+    }
+    if (!input.buyer.city || !input.buyer.postalCode) problems.push("XRechnung needs the buyer city and postal code.");
+    if (!input.payment) problems.push("XRechnung needs payment instructions (IBAN).");
+  }
   if (input.taxCurrency && !(input.taxCurrency.rate > 0 && /^[A-Z]{3}$/.test(input.taxCurrency.code))) {
     problems.push("Tax currency needs a 3-letter code and a positive exchange rate.");
   }
@@ -287,7 +308,9 @@ export function buildPeppolInvoice(input: PeppolInvoiceInput): PeppolResult {
 
   const taxCategoryXml = (indent: string, c: VatCategory, rate: number, withReason: boolean) => {
     const r = reasons(c);
-    return `${indent}<cbc:ID>${c}</cbc:ID>${c === "O" ? "" : `\n${indent}<cbc:Percent>${rate}</cbc:Percent>`}${
+    // XRechnung (BR-DE-14) wants the rate in every VAT breakdown, 0 for O; Peppol leaves it out for O.
+    const percent = c !== "O" || (profile === "xrechnung" && withReason);
+    return `${indent}<cbc:ID>${c}</cbc:ID>${percent ? `\n${indent}<cbc:Percent>${rate}</cbc:Percent>` : ""}${
       withReason && c !== "S" && c !== "Z"
         ? `${el(indent, "cbc:TaxExemptionReasonCode", r.code)}${el(indent, "cbc:TaxExemptionReason", r.text)}`
         : ""
@@ -300,7 +323,7 @@ ${indent}</cac:TaxScheme>`;
   const p = input.payment;
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <Invoice xmlns="urn:oasis:names:specification:ubl:schema:xsd:Invoice-2" xmlns:cac="urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2" xmlns:cbc="urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2">
-  <cbc:CustomizationID>${PEPPOL_BIS_3}</cbc:CustomizationID>
+  <cbc:CustomizationID>${profile === "xrechnung" ? XRECHNUNG_3 : PEPPOL_BIS_3}</cbc:CustomizationID>
   <cbc:ProfileID>${PEPPOL_BILLING_PROCESS}</cbc:ProfileID>
   <cbc:ID>${esc(input.number)}</cbc:ID>
   <cbc:IssueDate>${input.issueDate}</cbc:IssueDate>${el("  ", "cbc:DueDate", input.dueDate)}

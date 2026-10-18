@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Checks every XML in vectors/ against the UBL 2.1 XSD and the official schematron rules:
-# CEN EN 16931 (all invoices) and OpenPeppol BIS Billing 3.0 (peppol-* invoices).
+# CEN EN 16931 (all invoices), OpenPeppol BIS Billing 3.0 (peppol-*) and KoSIT XRechnung 3.0 (xrechnung-*).
 # Also validates the UNVTD PaymentConfirmation vector against the UN/CEFACT JSON Schema.
 # Needs curl, unzip, xmllint and Python 3; downloads the rules into conformance/.cache.
 set -euo pipefail
@@ -17,6 +17,12 @@ fi
 if [ ! -d "$CACHE/peppol-bis-invoice-3-$PEPPOL_VERSION" ]; then
   curl -sfL "https://github.com/OpenPEPPOL/peppol-bis-invoice-3/archive/refs/tags/v$PEPPOL_VERSION.tar.gz" | tar xz -C "$CACHE"
 fi
+if [ ! -d "$CACHE/xrechnung" ]; then
+  mkdir -p "$CACHE/xrechnung"
+  curl -sfL -o "$CACHE/xrechnung/xr.zip" \
+    "https://github.com/itplr-kosit/xrechnung-schematron/releases/download/v2.6.0/xrechnung-3.0.2-schematron-2.6.0.zip"
+  (cd "$CACHE/xrechnung" && unzip -q -o xr.zip)
+fi
 if [ ! -d "$CACHE/schxslt" ]; then
   mkdir -p "$CACHE/schxslt"
   curl -sfL -o "$CACHE/schxslt/s.jar" \
@@ -31,10 +37,10 @@ fi
 curl -sfL -o "$CACHE/unvtd-payment-confirmation-schema.yaml" https://unvtd.unece.org/payment-confirmation-schema.yaml
 
 status=0
-for f in ../vectors/ubl-*.xml ../vectors/peppol-*.xml; do
+for f in ../vectors/ubl-*.xml ../vectors/peppol-*.xml ../vectors/xrechnung-*.xml; do
   xmllint --noout --schema "$CACHE/ubl/xsd/maindoc/UBL-Invoice-2.1.xsd" "$f" 2>/dev/null || { echo "XSD FAIL $f"; status=1; }
 done
-"$CACHE/venv/bin/python" schematron.py "$CACHE" "$PEPPOL_VERSION" ../vectors/ubl-*.xml ../vectors/peppol-*.xml || status=1
+"$CACHE/venv/bin/python" schematron.py "$CACHE" "$PEPPOL_VERSION" ../vectors/ubl-*.xml ../vectors/peppol-*.xml ../vectors/xrechnung-*.xml || status=1
 "$CACHE/venv/bin/python" - "$CACHE/unvtd-payment-confirmation-schema.yaml" ../vectors/unvtd-payment-confirmation.json <<'PY' || status=1
 import json, sys, yaml, jsonschema
 schema = yaml.safe_load(open(sys.argv[1]))

@@ -1,4 +1,5 @@
-"""Runs the CEN EN 16931 UBL rules on every invoice and the OpenPeppol rules on peppol-* invoices."""
+"""Runs the CEN EN 16931 UBL rules on every invoice, the OpenPeppol rules on peppol-* invoices and the
+KoSIT XRechnung rules on xrechnung-* invoices."""
 import os
 import re
 import sys
@@ -21,9 +22,13 @@ with PySaxonProcessor(license=False) as proc:
             xslt.compile_stylesheet(stylesheet_file=pipeline).transform_to_file(
                 source_file=os.path.join(sch_dir, rules + ".sch"), output_file=target)
         executables[rules] = xslt.compile_stylesheet(stylesheet_file=target)
+    xr = os.path.join(cache, "xrechnung", "schematron", "ubl", "XRechnung-UBL-validation.xsl")
+    if os.path.exists(xr):
+        executables["XRechnung-UBL"] = xslt.compile_stylesheet(stylesheet_file=xr)
     for f in files:
         name = os.path.basename(f)
-        rule_sets = ["CEN-EN16931-UBL"] + (["PEPPOL-EN16931-UBL"] if name.startswith("peppol-") else [])
+        rule_sets = ["CEN-EN16931-UBL"] + (["PEPPOL-EN16931-UBL"] if name.startswith("peppol-") else []) + (
+            ["XRechnung-UBL"] if name.startswith("xrechnung-") else [])
         for rules in rule_sets:
             svrl = executables[rules].transform_to_string(source_file=os.path.abspath(f))
             asserts = re.findall(r"<svrl:failed-assert(.*?)</svrl:failed-assert>", svrl, re.S)

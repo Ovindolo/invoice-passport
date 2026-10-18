@@ -1,0 +1,52 @@
+{
+  "number": "RE-2026-0101",
+  "issueDate": "2026-10-18",
+  "dueDate": "2026-11-17",
+  "currency": "EUR",
+  "buyerReference": "04011000-12345-34",
+  "seller": {
+    "name": "Muster Software GmbH",
+    "endpoint": {
+      "scheme": "9930",
+      "id": "DE123456789"
+    },
+    "vatId": "DE123456789",
+    "street": "Hauptstrasse 1",
+    "city": "Berlin",
+    "postalCode": "10115",
+    "country": "DE",
+    "contact": {
+      "name": "Max Mustermann",
+      "phone": "+49 30 1234567",
+      "email": "rechnung@muster.example"
+    }
+  },
+  "buyer": {
+    "name": "Kunde AG",
+    "endpoint": {
+      "scheme": "9930",
+      "id": "DE811907980"
+    },
+    "vatId": "DE811907980",
+    "street": "Marktplatz 5",
+    "city": "Munich",
+    "postalCode": "80331",
+    "country": "DE"
+  },
+  "lines": [
+    {
+      "description": "Software licence",
+      "quantity": 2,
+      "unitPrice": 450,
+      "vatCategory": "S",
+      "vatRate": 19
+    }
+  ],
+  "payment": {
+    "iban": "DE89370400440532013000",
+    "reference": "RF18539007547034"
+  },
+  "delivery": {
+    "date": "2026-10-15"
+  }
+}

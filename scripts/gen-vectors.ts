@@ -31,9 +31,10 @@ for (const name of ["ubl-ro-O", "ubl-ro-S"]) {
 }
 
 for await (const entry of Deno.readDir(dir)) {
-  const m = entry.name.match(/^(peppol-.+)\.input\.json$/);
+  const m = entry.name.match(/^((peppol|xrechnung)-.+)\.input\.json$/);
   if (!m) continue;
-  const result = buildPeppolInvoice(JSON.parse(await read(entry.name)) as PeppolInvoiceInput);
+  const profile = m[2] === "xrechnung" ? "xrechnung" : "peppol";
+  const result = buildPeppolInvoice(JSON.parse(await read(entry.name)) as PeppolInvoiceInput, profile);
   if (!result.xml) throw new Error(`${m[1]}: ${result.problems.join("; ")}`);
   await write(`${m[1]}.xml`, result.xml);
 }
