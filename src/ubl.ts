@@ -156,13 +156,102 @@ const COUNTRY_ALIASES: Record<string, string> = {
   spania: "ES",
   "marea britanie": "GB",
   sua: "US",
+  // Informal or older English names that the standard names below do not cover.
+  "czech republic": "CZ",
+  holland: "NL",
+  "great britain": "GB",
+  britain: "GB",
+  england: "GB",
+  scotland: "GB",
+  wales: "GB",
+  "northern ireland": "GB",
+  america: "US",
+  "united states of america": "US",
+  us: "US",
+  "south korea": "KR",
+  korea: "KR",
+  "republic of korea": "KR",
+  "north korea": "KP",
+  turkey: "TR",
+  "ivory coast": "CI",
+  burma: "MM",
+  myanmar: "MM",
+  swaziland: "SZ",
+  macedonia: "MK",
+  "east timor": "TL",
+  "cape verde": "CV",
+  vatican: "VA",
+  ksa: "SA",
+  "democratic republic of the congo": "CD",
+  "dr congo": "CD",
+  drc: "CD",
+  "republic of the congo": "CG",
+  congo: "CG",
+  macau: "MO",
+  macao: "MO",
+  palestine: "PS",
+  russia: "RU",
+  vietnam: "VN",
 };
 
+/** ISO 3166-1 alpha-2 country codes, plus XK (Kosovo). */
+const ISO_COUNTRIES = new Set(
+  ("AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW " +
+    "BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ " +
+    "FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ " +
+    "IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH " +
+    "MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL " +
+    "PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD " +
+    "TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS XK YE YT ZA ZM ZW")
+    .split(" "),
+);
+/** Codes people use that are not the ISO code: UK for GB, and EL (the EU VAT prefix) for Greece. */
+const CODE_ALIASES: Record<string, string> = { UK: "GB", EL: "GR" };
+/** Country names are recognised in these languages (Billify's languages and its main markets'). */
+const NAME_LOCALES = [
+  "en", "de", "fr", "es", "it", "ro", "hi", "pt", "nl", "pl", "sv", "da", "fi", "cs", "sk", "sl", "hr", "hu", "bg",
+  "el", "lt", "lv", "et", "nb", "tr", "ru", "uk", "ar", "zh", "ja", "ko", "id", "vi", "th", "he",
+];
+
+/** "St. Kitts & Nevis" → "st kitts and nevis": no accents, punctuation or leading "the". */
+const nameKey = (s: string) =>
+  fold(s).replace(/&/g, " and ").replace(/[.,'’()\-]/g, " ").replace(/\s+/g, " ").trim().replace(/^the /, "");
+
+let namesByKey: Map<string, string> | null = null;
+/** Every country's standard name in NAME_LOCALES (from the runtime's Unicode data), by nameKey. */
+function countryNames(): Map<string, string> {
+  if (namesByKey) return namesByKey;
+  namesByKey = new Map();
+  for (const locale of NAME_LOCALES) {
+    let names: Intl.DisplayNames;
+    try {
+      names = new Intl.DisplayNames([locale], { type: "region", fallback: "none" });
+    } catch {
+      continue;
+    }
+    for (const code of ISO_COUNTRIES) {
+      const name = names.of(code);
+      if (!name) continue;
+      // "Myanmar (Burma)", "Hong Kong SAR China": the full name and the part before the qualifier.
+      for (const variant of [name, name.replace(/\s*\(.*\)$/, ""), name.replace(/ SAR China$/, "")]) {
+        const key = nameKey(variant);
+        if (key && !namesByKey.has(key)) namesByKey.set(key, code);
+      }
+    }
+  }
+  return namesByKey;
+}
+
+/** ISO code for a country written as a code ("de", "UK") or a name in a common language ("Sweden", "Suedia"). */
 export function countryCode(value: string | null): string | null {
   if (!value) return null;
   const v = value.trim();
-  if (/^[A-Za-z]{2}$/.test(v)) return v.toUpperCase();
-  return COUNTRY_ALIASES[fold(v)] ?? null;
+  if (/^[A-Za-z]{2}$/.test(v)) {
+    const code = CODE_ALIASES[v.toUpperCase()] ?? v.toUpperCase();
+    return ISO_COUNTRIES.has(code) ? code : null;
+  }
+  const key = nameKey(v);
+  return COUNTRY_ALIASES[fold(v)] ?? COUNTRY_ALIASES[key] ?? countryNames().get(key) ?? null;
 }
 
 export function countyFor(party: UblParty): string | null {
@@ -251,7 +340,9 @@ export function buildUblInvoice(input: UblInvoiceInput): UblResult {
     problems.push(`Currency ${currency} cannot be used on an e-Factura invoice; issue it in RON, EUR or USD.`);
   }
 
-  const sellerCountry = countryCode(input.seller.country) ?? "RO";
+  // RO e-Factura is for sellers in Romania: no country means Romania, an unrecognised one is reported.
+  const sellerCountry = input.seller.country?.trim() ? countryCode(input.seller.country) : "RO";
+  if (!sellerCountry) problems.push(`Seller country "${input.seller.country}" is not recognised.`);
   const buyerCountry = countryCode(input.buyer.country);
   const sellerCounty = sellerCountry === "RO" ? countyFor(input.seller) : null;
   const buyerCounty = buyerCountry === "RO" ? countyFor(input.buyer) : null;
@@ -344,7 +435,7 @@ export function buildUblInvoice(input: UblInvoiceInput): UblResult {
       ? `
   <cbc:TaxCurrencyCode>RON</cbc:TaxCurrencyCode>`
       : ""
-  }${partyXml("AccountingSupplierParty", input.seller, sellerCountry, sellerCounty, sellerVat)}${
+  }${partyXml("AccountingSupplierParty", input.seller, sellerCountry!, sellerCounty, sellerVat)}${
     partyXml("AccountingCustomerParty", input.buyer, buyerCountry!, buyerCounty, category === "S" && buyerVat)
   }${
     input.iban

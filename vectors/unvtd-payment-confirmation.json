@@ -1,5 +1,5 @@
 {
-  "@context": "https://unvtd.unece.org/payment-confirmation-context.json",
+  "@context": "https://unvtd.unece.org/payment-confirmation-context.jsonld",
   "type": [
     "VerifiableCredential",
     "PaymentConfirmation"

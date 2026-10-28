@@ -15,7 +15,7 @@ import type { Json } from "./canonical.ts";
 import { jwsHeader, type PublicJwk, signCompact, type SigningKey, verifyJws } from "./jws.ts";
 import type { Passport } from "./passport.ts";
 
-export const UNVTD_PAYMENT_CONTEXT = "https://unvtd.unece.org/payment-confirmation-context.json";
+export const UNVTD_PAYMENT_CONTEXT = "https://unvtd.unece.org/payment-confirmation-context.jsonld";
 export const UNVTD_PAYMENT_SCHEMA = "https://unvtd.unece.org/payment-confirmation-schema.yaml";
 
 type Obj = Record<string, Json>;
