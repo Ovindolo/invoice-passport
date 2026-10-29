@@ -208,6 +208,7 @@ const ISO_COUNTRIES = new Set(
 /** Codes people use that are not the ISO code: UK for GB, and EL (the EU VAT prefix) for Greece. */
 const CODE_ALIASES: Record<string, string> = { UK: "GB", EL: "GR" };
 /** Country names are recognised in these languages (Billify's languages and its main markets'). */
+// deno-fmt-ignore
 const NAME_LOCALES = [
   "en", "de", "fr", "es", "it", "ro", "hi", "pt", "nl", "pl", "sv", "da", "fi", "cs", "sk", "sl", "hr", "hu", "bg",
   "el", "lt", "lv", "et", "nb", "tr", "ru", "uk", "ar", "zh", "ja", "ko", "id", "vi", "th", "he",
